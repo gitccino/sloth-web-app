@@ -1,14 +1,59 @@
 import { Link } from '@tanstack/react-router'
 
 import { useState } from 'react'
-import { Home, Menu, Network, X } from 'lucide-react'
+import { Home, ListTodo, LogIn, Menu, Network, X } from 'lucide-react'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
     <>
-      <header className="p-4 flex items-center bg-gray-800 text-white shadow-lg">
+      <header className="p-2 flex justify-between items-center">
+        <button
+          className="p-1.5 hover:bg-foreground/5 rounded-xs transition-colors"
+          aria-label="Open menu"
+        >
+          <Menu size={16} />
+        </button>
+
+        <nav className="flex items-center gap-6 text-sm">
+          <Link
+            to="/"
+            className="w-fit px-3 py-2 flex items-center gap-1.5 hover:bg-foreground/5 rounded-xs transition-colors"
+            activeProps={{ className: '' }}
+          >
+            <Home size={16} color="#ffd6a880" />
+            <span>Home</span>
+          </Link>
+
+          <Link
+            to="/todos"
+            className="w-fit px-3 py-2 flex items-center gap-1.5 hover:bg-foreground/5 rounded-xs transition-colors"
+          >
+            <ListTodo size={16} color="#ffd6a880" />
+            <span>Todos</span>
+          </Link>
+
+          <Link
+            to="/signup"
+            className="w-fit px-3 py-2 flex items-center gap-1.5 hover:bg-foreground/5 rounded-xs transition-colors"
+          >
+            <LogIn size={16} color="#ffd6a880" />
+            <span>Sign Up</span>
+          </Link>
+
+          <Link
+            to="/demo/tanstack-query"
+            className="w-fit px-3 py-2 flex items-center gap-1.5 hover:bg-foreground/5 rounded-xs transition-colors"
+            activeProps={{ className: '' }}
+          >
+            <Network size={16} color="#ffd6a880" />
+            <span>TanStack Query</span>
+          </Link>
+        </nav>
+      </header>
+
+      {/* <header className="p-4 flex items-center bg-gray-800 text-white shadow-lg">
         <button
           onClick={() => setIsOpen(true)}
           className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
@@ -16,16 +61,7 @@ export default function Header() {
         >
           <Menu size={24} />
         </button>
-        <h1 className="ml-4 text-xl font-semibold">
-          <Link to="/">
-            <img
-              src="/tanstack-word-logo-white.svg"
-              alt="TanStack Logo"
-              className="h-10"
-            />
-          </Link>
-        </h1>
-      </header>
+      </header> */}
 
       <aside
         className={`fixed top-0 left-0 h-full w-80 bg-gray-900 text-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
