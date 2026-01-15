@@ -4,7 +4,21 @@
 
 @custom-variant dark (&:is(.dark *));
 @plugin "daisyui" {
-  themes: abyss --default;
+  themes: dark --default;
+}
+
+@font-face {
+  font-family: 'Object Sans';
+  src: url('./assets/fonts/PPObjectSans-Regular.otf') format('otf');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Averta';
+  src: url('./assets//fonts/averta-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
 }
 
 body {
@@ -12,8 +26,9 @@ body {
   /* font-family:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
     'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; */
-  /* font-family: 'Geist', sans-serif; */
-  font-family: 'Cascadia Code', monospace;
+  font-family: 'Averta', 'Geist', sans-serif;
+  /* font-family: 'Cascadia Code', monospace; */
+  font-size: 16px;
   font-weight: 500;
   letter-spacing: -0.2px;
   -webkit-font-smoothing: antialiased;
@@ -25,16 +40,19 @@ code {
     source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
+/*
+Red: #E65F5C
+Green: #B5D99C
+Cream: #F5F7DC
+Yellow: #FFFF82
+*/
+
 :root {
-  /* --background: oklch(1 0 0); */
-  --background: oklch(0.2247 0.0403 217.61);
-  /* --foreground: oklch(0.145 0 0); */
-  --foreground: oklch(0.9001 0.0753 69.86);
+  --background: oklch(0.2882 0.0221 277.51); /* dracula */
+  --foreground: oklch(0.9757 0.0095 119.58); /* dracula */
   --radius: 0.625rem;
-  /* --card: oklch(1 0 0); */
-  --card: oklch(0.3108 0.0557 217.61);
-  /* --card-foreground: oklch(0.145 0 0); */
-  --card-foreground: oklch(0.9001 0.0753 69.86);
+  --card: oklch(0.2158 0.0116 254.08);
+  --card-foreground: oklch(0.9735 0.0168 225.19);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.9001 0.0753 69.86);
@@ -42,17 +60,12 @@ code {
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
-  /* --muted-foreground: oklch(0.556 0 0); */
-  --muted-foreground: oklch(0.9001 0.0753 69.86 / 70%);
-  /* --accent: oklch(0.97 0 0); */
+  --muted-foreground: oklch(0.9757 0.0095 119.58 / 50%);
   --accent: oklch(0.4313 0 0);
-  /* --accent: oklch(0.1725 0.0374 236.52); */
   --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: oklch(0.6806 0.2005 25.41); /* dracula */
   --border: oklch(0.922 0 0);
-  /* --input: oklch(0.922 0 0); */
-  /* --input: oklch(0.9001 0.0753 69.86); */
-  --input: oklch(0.4313 0 0);
+  --input: oklch(0.3949 0.0342 275.9);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -67,6 +80,14 @@ code {
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --success: oklch(0.8439 0.0905 132.91);
+
+  --base-100: oklch(0.2882 0.0221 277.51);
+  --base-200: oklch(0.2688 0.0185 285.09);
+  --base-300: oklch(0.248 0.0189 284.94);
+  --neutral: oklch(0.3949 0.0342 275.9);
+  --neutral-content: oklch(0.8788 0.0059 264.53);
+  --base-content: oklch(0.9757 0.0095 119.58);
 }
 
 @theme {
@@ -136,6 +157,11 @@ code {
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-base-100: var(--base-100);
+  --color-base-200: var(--base-200);
+  --color-base-300: var(--base-300);
+  --color-neutral: var(--neutral);
 }
 
 .dark {

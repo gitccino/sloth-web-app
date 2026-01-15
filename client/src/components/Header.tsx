@@ -1,55 +1,104 @@
 import { Link } from '@tanstack/react-router'
 
-import { useState } from 'react'
-import { Home, ListTodo, LogIn, Menu, Network, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Home, ListTodo, LogIn, LogOut, Menu, Network, X } from 'lucide-react'
+import { authClient } from '@/lib/auth-client'
+import { Button } from '@/components/ui/button'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
+  const { data: session, isPending } = authClient.useSession()
+  const [isSignedIn, setIsSignedIn] = useState(false)
+
+  const handleSignout = async () => {
+    try {
+      await authClient.signOut()
+      setIsSignedIn(false)
+    } catch (err) {
+      console.error('Signout failed')
+    }
+  }
+
+  useEffect(() => {
+    if (!isPending && session) {
+      setIsSignedIn(true)
+    } else {
+      setIsSignedIn(false)
+    }
+  }, [session, isPending])
 
   return (
     <>
-      <header className="p-2 flex justify-between items-center">
-        <button
-          className="p-1.5 hover:bg-foreground/5 rounded-xs transition-colors"
-          aria-label="Open menu"
-        >
-          <Menu size={16} />
-        </button>
+      <header className="px-6 py-2 flex justify-between items-center">
+        <div className="flex justify-start items-center gap-2">
+          {/* <button
+            className="p-1.5 hover:bg-foreground/5 rounded-xs transition-colors"
+            aria-label="Open menu"
+          >
+            <Menu size={20} />
+          </button> */}
 
-        <nav className="flex items-center gap-6 text-sm">
+          <h1>Todos</h1>
+        </div>
+
+        <nav className="flex items-center gap-2 text-sm">
           <Link
             to="/"
-            className="w-fit px-3 py-2 flex items-center gap-1.5 hover:bg-foreground/5 rounded-xs transition-colors"
+            className="w-fit px-3 py-2 flex items-center gap-1.5 hover:bg-base-300 rounded-xl transition-colors"
             activeProps={{ className: '' }}
           >
-            <Home size={16} color="#ffd6a880" />
+            <Home size={16} className="opacity-50" />
             <span>Home</span>
           </Link>
 
-          <Link
-            to="/todos"
-            className="w-fit px-3 py-2 flex items-center gap-1.5 hover:bg-foreground/5 rounded-xs transition-colors"
-          >
-            <ListTodo size={16} color="#ffd6a880" />
-            <span>Todos</span>
-          </Link>
+          {isSignedIn && (
+            <Link
+              to="/todos"
+              className="w-fit px-3 py-2 flex items-center gap-1.5 hover:bg-base-300 rounded-xl transition-colors"
+            >
+              <ListTodo size={16} className="opacity-50" />
+              <span>Todos</span>
+            </Link>
+          )}
 
-          <Link
-            to="/signup"
-            className="w-fit px-3 py-2 flex items-center gap-1.5 hover:bg-foreground/5 rounded-xs transition-colors"
-          >
-            <LogIn size={16} color="#ffd6a880" />
-            <span>Sign Up</span>
-          </Link>
+          {!isSignedIn && (
+            <>
+              {/* <Link
+                to="/signup"
+                className="w-fit px-3 py-2 flex items-center gap-1.5 hover:bg-base-300 rounded-xl transition-colors"
+              >
+                <LogIn size={16} className="opacity-50" />
+                <span>Sign Up</span>
+              </Link> */}
 
-          <Link
+              <Link
+                to="/signin"
+                className="w-fit px-3 py-2 flex items-center gap-1.5 hover:bg-base-300 rounded-xl transition-colors"
+              >
+                <LogIn size={16} className="opacity-50" />
+                <span>Sign in</span>
+              </Link>
+            </>
+          )}
+
+          {isSignedIn && (
+            <Button
+              className="w-fit px-3 py-2 flex items-center gap-1.5 hover:bg-base-300 rounded-xl transition-colors cursor-pointer"
+              onClick={handleSignout}
+            >
+              <LogOut size={16} className="opacity-50" />
+              <span>Logout</span>
+            </Button>
+          )}
+
+          {/* <Link
             to="/demo/tanstack-query"
-            className="w-fit px-3 py-2 flex items-center gap-1.5 hover:bg-foreground/5 rounded-xs transition-colors"
+            className="w-fit px-3 py-2 flex items-center gap-1.5 hover:bg-base-300 rounded-xl transition-colors"
             activeProps={{ className: '' }}
           >
-            <Network size={16} color="#ffd6a880" />
+            <Network size={16} className="opacity-50" />
             <span>TanStack Query</span>
-          </Link>
+          </Link> */}
         </nav>
       </header>
 
