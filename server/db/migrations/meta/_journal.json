@@ -15,6 +15,13 @@
       "when": 1766317620607,
       "tag": "0001_mature_scarecrow",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1769341072440,
+      "tag": "0002_past_hulk",
+      "breakpoints": true
     }
   ]
 }

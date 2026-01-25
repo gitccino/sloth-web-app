@@ -208,7 +208,7 @@ function RouteComponent() {
   }
 
   return (
-    <div className="flex items-start justify-center min-h-dvh mt-10 pt-30">
+    <div className="flex items-start justify-center min-h-dvh pt-30">
       <Card className="w-full max-w-sm shadow-none">
         <CardHeader className="px-8">
           <CardTitle>Create an account</CardTitle>
