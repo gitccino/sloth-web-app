@@ -208,7 +208,7 @@ function RouteComponent() {
   }
 
   return (
-    <div className="flex items-start justify-center min-h-dvh pt-30">
+    <div className="flex items-start justify-center min-h-[calc(100vh-64px)] pt-30">
       <Card className="w-full max-w-sm shadow-none">
         <CardHeader className="px-8">
           <CardTitle>Create an account</CardTitle>
@@ -216,19 +216,20 @@ function RouteComponent() {
         </CardHeader>
         <CardContent>
           <div className="bt mb-8 p-1 rounded-full flex gap-1">
-            <Link
-              to="/signin"
+            <Button
+              variant="ghost"
               className={`h-8 flex-1 font-bold text-muted-foreground rounded-full text-sm flex items-center justify-center`}
+              aschild
             >
-              Sign in
-            </Link>
+              <Link to="/signin">Sign in</Link>
+            </Button>
 
-            <Link
-              to="/signup"
-              className={`h-8 flex-1 font-bold bg-neutral-content text-neutral rounded-full text-sm flex items-center justify-center`}
+            <Button
+              className={`h-8 flex-1 font-bold text-neutral rounded-full text-sm flex items-center justify-center`}
+              aschild
             >
-              Sign up
-            </Link>
+              <Link to="/signup">Sign up</Link>
+            </Button>
           </div>
 
           <form onChange={handleFormChange} onSubmit={handleSubmit}>
@@ -320,7 +321,7 @@ function RouteComponent() {
             <Button
               type="submit"
               disabled={!isFormValid || loading}
-              className={`h-12 w-full font-bold bg-neutral-content text-neutral rounded-full cursor-pointer`}
+              className={`h-12 w-full font-bold text-neutral rounded-full cursor-pointer`}
             >
               {loading ? (
                 <Loading>Creating account...</Loading>
