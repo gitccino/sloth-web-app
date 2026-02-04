@@ -1,11 +1,10 @@
 @import 'tailwindcss';
-@import url('https://fonts.googleapis.com/css2?family=Cascadia+Code:ital,wght@0,200..700;1,200..700&family=Geist:wght@100..900&display=swap');
 @import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
-@plugin "daisyui" {
+/*@plugin "daisyui" {
   themes: dark --default;
-}
+}*/
 
 @font-face {
   font-family: 'Object Sans';
@@ -101,7 +100,7 @@ code {
     overscroll-behavior: none;
   }
 
-  /* :root {
+   :root {
     background-color: var(--background);
     color: var(--foreground);
   } */
@@ -110,7 +109,7 @@ code {
     background-color: var(--background);
     color: var(--foreground);
     min-height: 100vh;
-  } */
+  }
 }
 
 @layer utilities {
@@ -163,6 +162,8 @@ code {
   --color-base-200: var(--base-200);
   --color-base-300: var(--base-300);
   --color-neutral: var(--neutral);
+
+  --color-active: var(--active);
 }
 
 .dark {
@@ -197,6 +198,8 @@ code {
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  --active: oklch(0.7858 0.0645 167.59);
 }
 
 @layer base {
