@@ -9,7 +9,9 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "bun run ./scripts/seed-local-db.script.ts",
-    "open-auth-docs": "open-cli http://localhost:3000/api/auth/reference"
+    "open-auth-docs": "open-cli http://localhost:3000/api/auth/reference",
+    "build": "bun build ./server/index.ts --outdir ./dist/server --target bun && cd client && bun run build",
+    "start": "bun run ./dist/server/index.js"
   },
   "dependencies": {
     "better-auth": "^1.4.7",
