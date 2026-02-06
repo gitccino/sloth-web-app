@@ -35,4 +35,12 @@ export const todos = new Hono<HonoEnv>()
       console.error("Error creating todo:", error);
       return c.json({ success: false, error: "Failed to create todo" }, 500);
     }
+  })
+  .patch("/:id", async (c) => {
+    const user = c.get("user");
+    const todoId = c.req.param("id");
+    // Create todoPatchSchema
+    // Validate todoPatchSchema
+    // Create patchTodo mutation function
+    // Update todo
   });
