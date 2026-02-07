@@ -7,13 +7,17 @@ export interface TodoComponentProps {
   id: string
   title: string
   completed: boolean
+  onEditStart: (id: string) => void
+  onEditEnd: (id: string) => void
+  handleDeleteTodo: () => Promise<void>
 }
 
 export const TodoComponent = React.forwardRef<
   HTMLDivElement,
   TodoComponentProps
 >((props, ref) => {
-  const { id, title, completed } = props
+  const { id, title, completed, onEditStart, onEditEnd, handleDeleteTodo } =
+    props
   const [isEditing, setIsEditing] = useState(false)
   const [editedTitle, setEditedTitle] = useState(title)
 
@@ -40,6 +44,7 @@ export const TodoComponent = React.forwardRef<
     ) {
       return // Don't enter edit mode
     }
+    onEditStart(id)
     setIsEditing(true)
   }
 
@@ -54,8 +59,11 @@ export const TodoComponent = React.forwardRef<
         id,
         title: trimmedTitle,
       })
+    } else {
+      handleDeleteTodo()
     }
     setIsEditing(false)
+    onEditEnd(id)
   }
 
   const handleToggleComplete = async () => {
@@ -72,6 +80,7 @@ export const TodoComponent = React.forwardRef<
     } else if (event.key === 'Escape') {
       setEditedTitle(title)
       setIsEditing(false)
+      onEditEnd(id)
     }
   }
 
@@ -84,12 +93,16 @@ export const TodoComponent = React.forwardRef<
     if (!isEditing) return
 
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node
+      if (!internalRef.current || internalRef.current.contains(target)) return
+      // Don't trigger when clicking elements that should handle their own click (e.g. delete button)
       if (
-        internalRef.current &&
-        !internalRef.current.contains(event.target as Node)
+        target instanceof HTMLElement &&
+        target.closest('[data-ignore-click-outside]')
       ) {
-        handleSaveEditing()
+        return
       }
+      handleSaveEditing()
     }
 
     document.addEventListener('mousedown', handleClickOutside)

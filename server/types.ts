@@ -10,6 +10,7 @@ export type HonoEnv = {
   };
 };
 
+export type Todo = typeof todos.$inferSelect;
 // export type TodoInsert = typeof todos.$inferInsert;
 export const todoInsertSchema = createInsertSchema(todos)
   .pick({ title: true, description: true })

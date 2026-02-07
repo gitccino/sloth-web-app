@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { getTodosByUserId } from "../db/queries";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { todoInsertSchema, todoUpdateSchema, type HonoEnv } from "../types";
-import { createTodo, updateTodo } from "../db/mutation";
+import { createTodo, deleteTodo, updateTodo } from "../db/mutation";
 import { zValidator } from "@hono/zod-validator";
 import { success } from "zod";
 
@@ -39,7 +39,6 @@ export const todos = new Hono<HonoEnv>()
   .patch("/:id", zValidator("json", todoUpdateSchema), async (c) => {
     const user = c.get("user");
     const todoId = c.req.param("id");
-    console.log("Todo ID:", todoId);
     const validatedTodo = c.req.valid("json");
     try {
       const updatedTodo = await updateTodo(user.id, todoId, validatedTodo);
@@ -54,5 +53,23 @@ export const todos = new Hono<HonoEnv>()
     } catch (error) {
       console.error("Error updating todo:", error);
       return c.json({ success: false, error: "Failed to update todo" }, 500);
+    }
+  })
+  .delete("/:id", async (c) => {
+    const user = c.get("user");
+    const todoId = c.req.param("id");
+    try {
+      const deletedTodo = await deleteTodo(user.id, todoId);
+      return c.json(
+        {
+          success: true,
+          data: deletedTodo,
+          message: "Todo deleted successfully",
+        },
+        201,
+      );
+    } catch (error) {
+      console.error("Error deleting todo:", error);
+      return c.json({ success: false, error: "Failed to delete todo" }, 500);
     }
   });

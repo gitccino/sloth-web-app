@@ -30,7 +30,7 @@ export const useCreateTodo = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todos'] })
-      toast.success('Todo created successfully')
+      // toast.success('Todo created successfully')
     },
     onError: (error) => {
       toast.error(error.message)
@@ -69,6 +69,28 @@ export const useUpdateTodo = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todos'] })
       // toast.success('Todo updated successfully')
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    },
+  })
+}
+
+export const useDeleteTodo = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id }: { id: string }) => {
+      const res = await client.api.todos[':id'].$delete({
+        param: { id },
+      })
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || 'Failed to delete todo')
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['todos'] })
+      // toast.success('Todo deleted successfully')
     },
     onError: (error) => {
       toast.error(error.message)

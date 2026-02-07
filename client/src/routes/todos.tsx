@@ -1,9 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 
 // icons
-import { AlertCircleIcon } from 'lucide-react'
+import { AlertCircleIcon, Ellipsis, Trash2 } from 'lucide-react'
 
 // Hono RPC
 import { hc } from 'hono/client'
@@ -11,7 +11,6 @@ import { motion } from 'motion/react'
 import type { AppType } from '../../../server/index.ts'
 
 // shadcn/ui
-import { Checkbox } from '@/components/ui/checkbox'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { authClient } from '@/lib/auth-client.ts'
@@ -19,7 +18,10 @@ import { Button } from '@/components/ui/button.tsx'
 import { TodoComponent } from '@/components/todo.tsx'
 
 import { cn } from '@/lib/utils.ts'
-import { useCreateTodo } from '@/utils/tanstack-query/useMutation.ts'
+import {
+  useCreateTodo,
+  useDeleteTodo,
+} from '@/utils/tanstack-query/useMutation.ts'
 
 const client = hc<AppType>('/')
 
@@ -38,10 +40,28 @@ function RouteComponent() {
       return res.json()
     },
   })
+  const [editingTodoId, setEditingTodoId] = useState<string | null>(null)
+  const [isEditingMode, setIsEditingMode] = useState(false)
   const createTodoMutation = useCreateTodo()
+  const deleteTodoMutation = useDeleteTodo()
+
+  const handleEditStart = (id: string) => {
+    setEditingTodoId(id)
+    setIsEditingMode(true)
+  }
+  const handleEditEnd = () => {
+    setEditingTodoId(null)
+    setIsEditingMode(false)
+  }
 
   const handleCreateNewTodo = async () => {
     await createTodoMutation.mutateAsync({ title: 'New todo' })
+  }
+
+  const handleDeleteTodo = async () => {
+    if (!editingTodoId) return
+    await deleteTodoMutation.mutateAsync({ id: editingTodoId })
+    handleEditEnd()
   }
 
   useEffect(() => {
@@ -73,7 +93,17 @@ function RouteComponent() {
 
         <div className="flex flex-col items-center gap-0.5">
           {data &&
-            data.map((todo) => <TodoComponent key={todo.id} {...todo} />)}
+            data.map((todo) => (
+              <TodoComponent
+                key={todo.id}
+                id={todo.id}
+                title={todo.title}
+                completed={todo.completed}
+                onEditStart={handleEditStart}
+                onEditEnd={handleEditEnd}
+                handleDeleteTodo={handleDeleteTodo}
+              />
+            ))}
 
           {data && data.length === 0 && (
             <div className="flex items-center gap-2 text-muted-foreground">
@@ -88,6 +118,41 @@ function RouteComponent() {
           </motion.div>
         </div>
       </div>
+
+      <motion.div
+        initial="hidden"
+        animate={isEditingMode ? 'visible' : 'hidden'}
+        variants={{
+          hidden: {
+            y: 20,
+            opacity: 0,
+            scale: 0.9,
+          },
+          visible: {
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            transition: {
+              type: 'spring',
+              stiffness: 300,
+              damping: 25,
+            },
+          },
+        }}
+        className="fixed bottom-10 px-2 py-1 rounded-2xl flex items-center justify-center gap-0 bg-[#151515]"
+        data-ignore-click-outside
+      >
+        <Button
+          variant="destructiveGhost"
+          className="rounded-xl"
+          onClick={handleDeleteTodo}
+        >
+          <Trash2 size={16} />
+        </Button>
+        <Button variant="ghost" className="rounded-xl">
+          <Ellipsis size={16} />
+        </Button>
+      </motion.div>
     </div>
   )
 }

@@ -23,3 +23,11 @@ export const updateTodo = async (
     .returning();
   return updatedTodo;
 };
+
+export const deleteTodo = async (userId: string, id: string) => {
+  const [deletedTodo] = await db
+    .delete(todos)
+    .where(and(eq(todos.id, id), eq(todos.userId, userId)))
+    .returning();
+  return deletedTodo;
+};
