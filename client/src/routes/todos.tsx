@@ -81,7 +81,7 @@ function RouteComponent() {
                 key={todo.id}
                 id={todo.id}
                 title={todo.title}
-                completed
+                completed={todo.completed}
                 onEditStart={handleEditStart}
                 onEditEnd={handleEditEnd}
               />

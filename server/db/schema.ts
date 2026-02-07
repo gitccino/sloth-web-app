@@ -1,15 +1,25 @@
-import { boolean, pgTable, timestamp, uuid, varchar, text, index } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  pgTable,
+  timestamp,
+  uuid,
+  varchar,
+  text,
+  index,
+} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
-export const todos = pgTable('todos', {
+export const todos = pgTable("todos", {
   id: uuid().primaryKey().defaultRandom(),
-  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
   title: varchar({ length: 500 }).notNull(),
   description: varchar({ length: 1000 }),
-  completed: boolean().default(false),
+  completed: boolean().notNull().default(false),
   createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
-})
+});
 
 // better-auth schema
 
@@ -103,4 +113,3 @@ export const accountRelations = relations(account, ({ one }) => ({
     references: [user.id],
   }),
 }));
-

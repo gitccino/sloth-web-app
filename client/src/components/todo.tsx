@@ -63,6 +63,7 @@ export const TodoComponent = React.forwardRef<
   }
 
   const handleToggleComplete = async () => {
+    console.log('handleToggleComplete')
     await updateTodoMutation.mutateAsync({
       id: props.id,
       completed: !completed,
