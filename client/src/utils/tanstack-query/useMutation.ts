@@ -37,3 +37,41 @@ export const useCreateTodo = () => {
     },
   })
 }
+
+export const useUpdateTodo = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      id,
+      title,
+      description,
+      completed,
+    }: {
+      id: string
+      title?: string
+      description?: string
+      completed?: boolean
+    }) => {
+      const res = await client.api.todos[':id'].$patch({
+        param: { id },
+        json: {
+          title,
+          description,
+          completed,
+        },
+      })
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || 'Failed to update todo')
+      }
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['todos'] })
+      // toast.success('Todo updated successfully')
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    },
+  })
+}

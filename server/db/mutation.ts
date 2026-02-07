@@ -1,6 +1,7 @@
 import { db } from "./db";
-import type { TodoInsert } from "../types";
+import type { TodoInsert, TodoUpdate } from "../types";
 import { todos } from "../db/schema";
+import { and, eq } from "drizzle-orm";
 
 export const createTodo = async (userId: string, todo: TodoInsert) => {
   const [createdTodo] = await db
@@ -8,4 +9,17 @@ export const createTodo = async (userId: string, todo: TodoInsert) => {
     .values({ ...todo, userId })
     .returning();
   return createdTodo;
+};
+
+export const updateTodo = async (
+  userId: string,
+  id: string,
+  todo: TodoUpdate,
+) => {
+  const [updatedTodo] = await db
+    .update(todos)
+    .set(todo)
+    .where(and(eq(todos.id, id), eq(todos.userId, userId)))
+    .returning();
+  return updatedTodo;
 };

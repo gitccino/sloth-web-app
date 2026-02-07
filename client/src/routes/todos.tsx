@@ -51,7 +51,7 @@ function RouteComponent() {
   }, [session, router, isPending])
 
   return (
-    <div className="flex items-start justify-center min-h-dvh mt-10 pt-30">
+    <div className="flex items-start justify-center min-h-[calc(100vh-64px)] pt-30">
       <div className="flex flex-col gap-4">
         {isLoading && (
           <div className="flex flex-col gap-2">
@@ -73,9 +73,7 @@ function RouteComponent() {
 
         <div className="flex flex-col items-center gap-0.5">
           {data &&
-            data.map((todo) => (
-              <TodoComponent key={todo.id} title={todo.title} />
-            ))}
+            data.map((todo) => <TodoComponent key={todo.id} {...todo} />)}
 
           {data && data.length === 0 && (
             <div className="flex items-center gap-2 text-muted-foreground">
