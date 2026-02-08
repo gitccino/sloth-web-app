@@ -18,7 +18,7 @@ export function WarningMessage({
       aria-atomic="true"
       aria-label={`${name} validation status`}
       className={cn(
-        `text-sm text-destructive font-medium ${message === '' ? 'hidden' : 'visible'}`,
+        `text-xs text-core-destructive font-semibold ${message === '' ? 'hidden' : 'visible'}`,
         className,
       )}
     >

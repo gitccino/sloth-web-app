@@ -59,7 +59,7 @@ export const TodoComponent = React.forwardRef<
         id,
         title: trimmedTitle,
       })
-    } else {
+    } else if (trimmedTitle.length === 0) {
       handleDeleteTodo()
     }
     setIsEditing(false)
@@ -117,7 +117,7 @@ export const TodoComponent = React.forwardRef<
       <motion.form
         layout
         animate={{
-          backgroundColor: isEditing ? '#fffcec10' : 'rgba(0,0,0,0)',
+          backgroundColor: isEditing ? '#e0dfcd95' : 'rgba(0,0,0,0)',
           padding: isEditing ? '0.5rem 1rem' : '0rem 0.25rem',
           margin: isEditing ? '10px 0px' : '0px 0px',
         }}
@@ -128,6 +128,7 @@ export const TodoComponent = React.forwardRef<
           data-checkbox
           checked={completed}
           onCheckedChange={handleToggleComplete}
+          className="border-core-muted-foreground/30 shadow-none"
         />
         <div onClick={handleInitEditing} className="relative w-50">
           {isEditing ? (

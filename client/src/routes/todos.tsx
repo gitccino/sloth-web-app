@@ -71,7 +71,7 @@ function RouteComponent() {
   }, [session, router, isPending])
 
   return (
-    <div className="flex items-start justify-center min-h-[calc(100vh-64px)] pt-30">
+    <div className="relative z-10 flex items-start justify-center min-h-[calc(100vh-120px)] pt-30">
       <div className="flex flex-col gap-4">
         {isLoading && (
           <div className="flex flex-col gap-2">
@@ -112,7 +112,11 @@ function RouteComponent() {
           )}
 
           <motion.div className={cn(data && data.length > 0 ? 'mt-4' : '')}>
-            <Button variant="linkAnimated" onClick={handleCreateNewTodo}>
+            <Button
+              variant="linkAnimated"
+              onClick={handleCreateNewTodo}
+              className="font-semibold"
+            >
               Add new todo
             </Button>
           </motion.div>
@@ -139,7 +143,7 @@ function RouteComponent() {
             },
           },
         }}
-        className="fixed bottom-10 px-2 py-1 rounded-2xl flex items-center justify-center gap-0 bg-[#151515]"
+        className="fixed bottom-10 px-2 py-1 rounded-2xl flex items-center justify-center gap-0 bg-core-card"
         data-ignore-click-outside
       >
         <Button
@@ -149,7 +153,7 @@ function RouteComponent() {
         >
           <Trash2 size={16} />
         </Button>
-        <Button variant="ghost" className="rounded-xl">
+        <Button variant="ghost" className="rounded-xl hover:bg-black/10">
           <Ellipsis size={16} />
         </Button>
       </motion.div>

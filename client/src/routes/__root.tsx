@@ -19,7 +19,9 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     <>
       <Header />
       <Toaster />
-      <Outlet />
+      <div className="bg-noise-container">
+        <Outlet />
+      </div>
       <TanStackDevtools
         config={{
           position: 'bottom-right',

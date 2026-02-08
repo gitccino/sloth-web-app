@@ -185,24 +185,26 @@ function RouteComponent() {
     setAuthError('')
 
     try {
-      await authClient.signUp
-        .email({
+      await authClient.signUp.email(
+        {
           email: signupData.email,
           password: signupData.password,
           name: signupData.username,
-        }, {
+        },
+        {
           onRequest: () => {
             setLoading(true)
           },
           onSuccess: () => {
-            toast.success('Account created successfully')
+            // toast.success('Account created successfully')
             router.navigate({ to: '/todos' })
           },
           onError: (ctx) => {
             toast.error(ctx.error.message)
             setAuthError(ctx.error.message)
-          }
-        })
+          },
+        },
+      )
       // throw new Error('Signup failed')
     } catch (err) {
       setAuthError('An unexpected error occured')
@@ -214,14 +216,14 @@ function RouteComponent() {
   }
 
   return (
-    <div className="flex items-start justify-center min-h-[calc(100vh-64px)] pt-30">
-      <Card className="w-full max-w-sm shadow-none">
-        <CardHeader className="px-8">
-          <CardTitle>Create an account</CardTitle>
+    <div className="relative z-10 flex items-start justify-center min-h-[calc(100vh-120px)] mt-4 pt-30">
+      <Card className="w-full max-w-sm shadow-none bg-core-background">
+        <CardHeader className="w-full flex flex-col items-center gap-1 px-8">
+          <CardTitle className="font-bold">Create an account</CardTitle>
           <CardDescription>We Are Happy To See You</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="bt mb-8 p-1 rounded-full flex gap-1">
+          {/* <div className="bt mb-8 p-1 rounded-full flex gap-1">
             <Button
               variant="ghost"
               className={`h-8 flex-1 font-bold text-muted-foreground rounded-full text-sm flex items-center justify-center`}
@@ -236,7 +238,7 @@ function RouteComponent() {
             >
               <Link to="/signup">Sign up</Link>
             </Button>
-          </div>
+          </div> */}
 
           <form onChange={handleFormChange} onSubmit={handleSubmit}>
             <div className="flex flex-col gap-2 mb-4">
@@ -252,7 +254,7 @@ function RouteComponent() {
                   required
                   disabled={loading}
                   endIcon={User}
-                  className={`rounded-full h-12 ${signupData.username && !errors.username ? 'border-success focus-visible:border-success' : signupData.username ? 'border-destructive focus-visible:border-destructive' : ''}`}
+                  className={`rounded-xl shadow-none h-12 ${signupData.username && !errors.username ? '' : signupData.username ? 'border-destructive focus-visible:border-destructive' : ''}`}
                 />
                 <WarningMessage
                   name="username"
@@ -271,7 +273,7 @@ function RouteComponent() {
                   disabled={loading}
                   required
                   endIcon={Mail}
-                  className={`rounded-full h-12 ${signupData.email && !errors.email ? 'border-success focus-visible:border-success' : signupData.email ? 'border-destructive focus-visible:border-destructive' : ''}`}
+                  className={`rounded-xl shadow-none h-12 ${signupData.email && !errors.email ? '' : signupData.email ? 'border-destructive focus-visible:border-destructive' : ''}`}
                 />
                 <WarningMessage
                   name="email"
@@ -292,7 +294,7 @@ function RouteComponent() {
                   disabled={loading}
                   required
                   endIcon={KeyRound}
-                  className={`rounded-full h-12 ${signupData.password && !errors.password ? 'border-success focus-visible:border-success' : signupData.password ? 'border-destructive focus-visible:border-destructive' : ''}`}
+                  className={`rounded-xl shadow-none h-12 ${signupData.password && !errors.password ? '' : signupData.password ? 'border-destructive focus-visible:border-destructive' : ''}`}
                 />
                 <WarningMessage
                   name="password"
@@ -314,7 +316,7 @@ function RouteComponent() {
                   disabled={loading}
                   required
                   endIcon={KeyRound}
-                  className={`rounded-full h-12 ${signupData.confirmPassword && !errors.confirmPassword ? 'border-success focus-visible:border-success' : signupData.confirmPassword ? 'border-destructive focus-visible:border-destructive' : ''}`}
+                  className={`rounded-xl shadow-none h-12 ${signupData.confirmPassword && !errors.confirmPassword ? '' : signupData.confirmPassword ? 'border-destructive focus-visible:border-destructive' : ''}`}
                 />
                 <WarningMessage
                   name="confirmPassword"
@@ -326,8 +328,9 @@ function RouteComponent() {
 
             <Button
               type="submit"
+              variant="defaultCore"
               disabled={!isFormValid || loading}
-              className={`h-12 w-full font-bold text-neutral rounded-full cursor-pointer`}
+              className={`h-12 w-full font-bold text-white rounded-xl cursor-pointer`}
             >
               {loading ? (
                 <Loading>Creating account...</Loading>

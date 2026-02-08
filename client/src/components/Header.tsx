@@ -14,7 +14,7 @@ export default function Header() {
     try {
       await authClient.signOut()
       // throw new Error('Signout failed')
-      toast.success('Signed out successfully')
+      // toast.success('Signed out successfully')
       setIsSignedIn(false)
     } catch (err) {
       console.error('Signout failed')
@@ -32,85 +32,72 @@ export default function Header() {
 
   return (
     <>
-      <header className="px-6 py-2 flex justify-between items-center">
-        <div className="flex justify-start items-center gap-2">
-          {/* <button
-            className="p-1.5 hover:bg-foreground/5 rounded-xs transition-colors"
-            aria-label="Open menu"
-          >
-            <Menu size={20} />
-          </button> */}
-
-          <h1>Todos</h1>
+      <header className="relative px-6 py-2 h-20 pt-4 flex justify-between items-center bg-core-primary text-white">
+        <div className="flex justify-start items-center gap-2 font-bold">
+          <h1 className="text-xl">core</h1>
         </div>
 
-        <nav className="flex items-center gap-2 text-sm">
-          <Button variant="ghost" asChild>
+        <nav className="z-20 flex items-center gap-2 text-sm">
+          <Button variant="ghostNav" size="sm" asChild>
             <Link
               to="/"
-              className="group w-fit px-3 py-2 flex items-center gap-1.5 rounded-xl transition-colors"
-              activeProps={{ className: 'font-bold' }}
+              className="group w-fit px-3 py-2 flex items-center gap-1 rounded-lg transition-colors"
+              // activeProps={{ className: 'font-bold' }}
             >
               <Home
-                size={16}
-                className="opacity-50 group-data-[status=active]:opacity-100"
+                className="size-3 opacity-50 group-data-[status=active]:opacity-100"
+                strokeWidth={2.5}
               />
-              <span>Home</span>
+              <span className="font-bold">Home</span>
             </Link>
           </Button>
 
           {isSignedIn && (
-            <Button variant="ghost" asChild>
+            <Button variant="ghostNav" size="sm" asChild>
               <Link
                 to="/todos"
-                className="w-fit px-3 py-2 flex items-center gap-1.5 rounded-xl transition-colors"
+                className="group w-fit px-3 py-2 flex items-center gap-1 rounded-lg transition-colors"
               >
-                <ListTodo size={16} className="opacity-50" />
-                <span>Todos</span>
+                <ListTodo
+                  className="size-3 opacity-50 group-data-[status=active]:opacity-100"
+                  strokeWidth={2.5}
+                />
+                <span className="font-bold">Todos</span>
               </Link>
             </Button>
           )}
 
           {!isSignedIn && (
             <>
-              {/* <Link
-                to="/signup"
-                className="w-fit px-3 py-2 flex items-center gap-1.5 hover:bg-base-300 rounded-xl transition-colors"
-              >
-                <LogIn size={16} className="opacity-50" />
-                <span>Sign Up</span>
-              </Link> */}
-
-              <Link
-                to="/signin"
-                className="w-fit px-3 py-2 flex items-center gap-1.5 hover:bg-base-300 rounded-xl transition-colors"
-              >
-                <LogIn size={16} className="opacity-50" />
-                <span>Sign in</span>
-              </Link>
+              <Button variant="ghostNav" size="sm" asChild>
+                <Link
+                  to="/signin"
+                  className="group w-fit px-3 py-2 flex items-center gap-1 rounded-lg transition-colors"
+                >
+                  <LogIn
+                    className="size-3 opacity-50 group-data-[status=active]:opacity-100"
+                    strokeWidth={2.5}
+                  />
+                  <span className="font-bold">Sign in</span>
+                </Link>
+              </Button>
             </>
           )}
 
           {isSignedIn && (
             <Button
-              variant="outline"
-              className="w-fit px-3 py-2 flex items-center gap-1.5 rounded-xl transition-colors cursor-pointer"
+              variant="default"
+              size="sm"
+              className="w-fit px-3 py-2 flex items-center gap-1.5 rounded-lg transition-colors cursor-pointer"
               onClick={handleSignout}
             >
-              <LogOut size={16} className="opacity-80" />
-              <span>Logout</span>
+              <LogOut className="size-3 opacity-100" strokeWidth={2.5} />
+              <span className="font-bold">Logout</span>
             </Button>
           )}
-
-          {/* <Link
-            to="/demo/tanstack-query"
-            className="w-fit px-3 py-2 flex items-center gap-1.5 hover:bg-base-300 rounded-xl transition-colors"
-            activeProps={{ className: '' }}
-          >
-            <Network size={16} className="opacity-50" />
-            <span>TanStack Query</span>
-          </Link> */}
         </nav>
+
+        <div className="nav-splitter" />
       </header>
 
       {/* <header className="p-4 flex items-center bg-gray-800 text-white shadow-lg">

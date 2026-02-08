@@ -1,9 +1,9 @@
-import { desc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { db } from "./db";
 import { todos } from "./schema";
 
 export const getTodos = async () => {
-  return await db.select().from(todos).orderBy(desc(todos.createdAt));
+  return await db.select().from(todos).orderBy(asc(todos.createdAt));
 };
 
 export const getTodosByUserId = async (userId: string) => {
@@ -11,5 +11,5 @@ export const getTodosByUserId = async (userId: string) => {
     .select()
     .from(todos)
     .where(eq(todos.userId, userId))
-    .orderBy(desc(todos.createdAt));
+    .orderBy(asc(todos.createdAt));
 };

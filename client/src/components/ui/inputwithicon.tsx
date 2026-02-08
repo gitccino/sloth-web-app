@@ -22,7 +22,7 @@ const InputWithIcon = React.forwardRef<HTMLInputElement, InputWithIconProps>(
         <Input
           type={type}
           className={cn(
-            'flex h-10 w-full rounded-md py-2 px-4',
+            'flex h-10 w-full rounded-md py-2 px-4 text-core-foreground border-core-border/20 ring-0 focus-visible:ring-0',
             startIcon ? 'pl-10' : '',
             endIcon ? 'pr-10' : '',
             className,

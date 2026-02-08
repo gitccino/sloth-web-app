@@ -83,23 +83,25 @@ function RouteComponent() {
     setAuthError('')
 
     try {
-      await authClient.signIn
-        .email({
+      await authClient.signIn.email(
+        {
           email: signinData.email,
           password: signinData.password,
-        }, {
+        },
+        {
           onRequest: () => {
             setLoading(true)
           },
           onSuccess: () => {
-            toast.success('Signed in successfully')
+            // toast.success('Signed in successfully')
             router.navigate({ to: '/todos' })
           },
           onError: (ctx) => {
             toast.error(ctx.error.message)
             setAuthError(ctx.error.message)
-          }
-        })
+          },
+        },
+      )
       // throw new Error('Signin failed')
     } catch (err) {
       setAuthError('An unexpected error occured')
@@ -111,14 +113,14 @@ function RouteComponent() {
   }
 
   return (
-    <div className="flex items-start justify-center min-h-[calc(100vh-64px)] pt-30 bg-background">
-      <Card className="w-full max-w-sm shadow-none">
-        <CardHeader className="px-8">
-          <CardTitle>Welcome Back</CardTitle>
+    <div className="relative z-10 flex items-start justify-center min-h-[calc(100vh-120px)] mt-4 pt-30 bg-core-background">
+      <Card className="w-full max-w-sm shadow-none bg-core-background">
+        <CardHeader className="w-full flex flex-col items-center gap-1 px-8">
+          <CardTitle className="font-bold">Welcome Back</CardTitle>
           <CardDescription>We Are Happy To See You Again</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="bt mb-8 p-1 rounded-full flex gap-1">
+          {/* <div className="bt mb-8 p-1 rounded-full flex gap-1">
             <Button
               className="h-8 flex-1 font-bold text-neutral rounded-full text-sm flex items-center justify-center"
               asChild
@@ -133,7 +135,7 @@ function RouteComponent() {
             >
               <Link to="/signup">Sign up</Link>
             </Button>
-          </div>
+          </div> */}
 
           <form onChange={handleFormChange} onSubmit={handleSubmit}>
             <div className="flex flex-col gap-2 mb-4">
@@ -147,7 +149,7 @@ function RouteComponent() {
                   disabled={loading}
                   required
                   endIcon={Mail}
-                  className={`rounded-full h-12`}
+                  className={`rounded-xl h-12 shadow-none`}
                 />
                 <WarningMessage
                   name="username"
@@ -168,7 +170,7 @@ function RouteComponent() {
                   disabled={loading}
                   required
                   endIcon={KeyRound}
-                  className={`rounded-full h-12`}
+                  className={`rounded-xl h-12 shadow-none`}
                 />
                 <WarningMessage
                   name="password"
@@ -179,8 +181,9 @@ function RouteComponent() {
             </div>
             <Button
               type="submit"
+              variant="defaultCore"
               disabled={!isFormValid || loading}
-              className={`h-12 w-full font-bold text-neutral rounded-full cursor-pointer`}
+              className={`h-12 w-full font-bold text-white rounded-xl cursor-pointer`}
             >
               {loading ? <Loading>Signing in...</Loading> : 'Sign in'}
             </Button>
@@ -191,6 +194,12 @@ function RouteComponent() {
               </Alert>
             )}
           </form>
+          <div className="w-full py-3 flex justify-center items-center gap-4 text-sm text-muted-foreground">
+            <span>Don't have an account?</span>
+            <Link to="/signup" className="text-core-foreground">
+              Create an account
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>
