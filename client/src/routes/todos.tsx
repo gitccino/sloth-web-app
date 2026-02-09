@@ -65,6 +65,7 @@ function RouteComponent() {
   }
 
   useEffect(() => {
+    // console.log('/todos page useEffect')
     if (!session && !isPending) {
       router.navigate({ to: '/signin' })
     }

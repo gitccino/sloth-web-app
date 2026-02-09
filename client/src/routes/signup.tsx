@@ -216,14 +216,21 @@ function RouteComponent() {
   }
 
   return (
-    <div className="relative z-10 flex items-start justify-center min-h-[calc(100vh-120px)] mt-4 pt-30">
-      <Card className="w-full max-w-sm shadow-none bg-core-background">
-        <CardHeader className="w-full flex flex-col items-center gap-1 px-8">
-          <CardTitle className="font-bold">Create an account</CardTitle>
-          <CardDescription>We Are Happy To See You</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {/* <div className="bt mb-8 p-1 rounded-full flex gap-1">
+    <div className="relative flex items-center justify-center min-h-[calc(100vh-80px)] px-[5%]">
+      <div className="min-h-[600px] w-120 bg-core-foreground rounded-2xl p-10 text-core-background"></div>
+
+      <div className="min-h-[calc(100vh-120px)] w-100 flex items-center pb-20">
+        <Card className="w-full max-w-sm shadow-none bg-core-background">
+          <CardHeader className="w-full flex flex-col items-start gap-1 px-8">
+            <CardTitle className="font-recoleta font-bold text-3xl text-core-foreground">
+              Create an account
+            </CardTitle>
+            <CardDescription className="pl-0.5 font-normal">
+              Activate your better flow state here at Sloth
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {/* <div className="bt mb-8 p-1 rounded-full flex gap-1">
             <Button
               variant="ghost"
               className={`h-8 flex-1 font-bold text-muted-foreground rounded-full text-sm flex items-center justify-center`}
@@ -240,113 +247,123 @@ function RouteComponent() {
             </Button>
           </div> */}
 
-          <form onChange={handleFormChange} onSubmit={handleSubmit}>
-            <div className="flex flex-col gap-2 mb-4">
-              <div className="grid gap-1">
-                <InputWithIcon
-                  id="username"
-                  name="username"
-                  type="username"
-                  autoComplete="off"
-                  placeholder="Enter your username"
-                  pattern="[A-Za-z]+"
-                  // value={signupData.username}
-                  required
-                  disabled={loading}
-                  endIcon={User}
-                  className={`rounded-xl shadow-none h-12 ${signupData.username && !errors.username ? '' : signupData.username ? 'border-destructive focus-visible:border-destructive' : ''}`}
-                />
-                <WarningMessage
-                  name="username"
-                  message={errors.username}
-                  className="px-4"
-                />
-              </div>
-              <div className="grid gap-1">
-                <InputWithIcon
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="off"
-                  placeholder="Enter your email"
-                  // value={signupData.email}
-                  disabled={loading}
-                  required
-                  endIcon={Mail}
-                  className={`rounded-xl shadow-none h-12 ${signupData.email && !errors.email ? '' : signupData.email ? 'border-destructive focus-visible:border-destructive' : ''}`}
-                />
-                <WarningMessage
-                  name="email"
-                  message={errors.email}
-                  className="px-4"
-                />
-              </div>
-              <div className="grid gap-1">
-                <InputWithIcon
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  pattern="[A-Za-z0-9@]+"
-                  minLength={8}
-                  maxLength={30}
-                  // value={signupData.password}
-                  disabled={loading}
-                  required
-                  endIcon={KeyRound}
-                  className={`rounded-xl shadow-none h-12 ${signupData.password && !errors.password ? '' : signupData.password ? 'border-destructive focus-visible:border-destructive' : ''}`}
-                />
-                <WarningMessage
-                  name="password"
-                  message={errors.password}
-                  className="px-4"
-                />
+            <form onChange={handleFormChange} onSubmit={handleSubmit}>
+              <div className="flex flex-col gap-2 mb-4">
+                <div className="grid gap-1">
+                  <InputWithIcon
+                    id="username"
+                    name="username"
+                    type="username"
+                    autoComplete="off"
+                    placeholder="Enter your username"
+                    pattern="[A-Za-z]+"
+                    // value={signupData.username}
+                    required
+                    disabled={loading}
+                    endIcon={User}
+                    className={`rounded-xl shadow-none h-12 ${signupData.username && !errors.username ? '' : signupData.username ? 'border-destructive focus-visible:border-destructive' : ''}`}
+                  />
+                  <WarningMessage
+                    name="username"
+                    message={errors.username}
+                    className="px-4"
+                  />
+                </div>
+                <div className="grid gap-1">
+                  <InputWithIcon
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="off"
+                    placeholder="Enter your email"
+                    // value={signupData.email}
+                    disabled={loading}
+                    required
+                    endIcon={Mail}
+                    className={`rounded-xl shadow-none h-12 ${signupData.email && !errors.email ? '' : signupData.email ? 'border-destructive focus-visible:border-destructive' : ''}`}
+                  />
+                  <WarningMessage
+                    name="email"
+                    message={errors.email}
+                    className="px-4"
+                  />
+                </div>
+                <div className="grid gap-1">
+                  <InputWithIcon
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    pattern="[A-Za-z0-9@]+"
+                    minLength={8}
+                    maxLength={30}
+                    // value={signupData.password}
+                    disabled={loading}
+                    required
+                    endIcon={KeyRound}
+                    className={`rounded-xl shadow-none h-12 ${signupData.password && !errors.password ? '' : signupData.password ? 'border-destructive focus-visible:border-destructive' : ''}`}
+                  />
+                  <WarningMessage
+                    name="password"
+                    message={errors.password}
+                    className="px-4"
+                  />
+                </div>
+
+                <div className="grid gap-1">
+                  <InputWithIcon
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    placeholder="Confirm your password"
+                    pattern="[A-Za-z0-9@]+"
+                    minLength={8}
+                    maxLength={30}
+                    // value={signupData.confirmPassword}
+                    disabled={loading}
+                    required
+                    endIcon={KeyRound}
+                    className={`rounded-xl shadow-none h-12 ${signupData.confirmPassword && !errors.confirmPassword ? '' : signupData.confirmPassword ? 'border-destructive focus-visible:border-destructive' : ''}`}
+                  />
+                  <WarningMessage
+                    name="confirmPassword"
+                    message={errors.confirmPassword}
+                    className="px-4"
+                  />
+                </div>
               </div>
 
-              <div className="grid gap-1">
-                <InputWithIcon
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  placeholder="Confirm your password"
-                  pattern="[A-Za-z0-9@]+"
-                  minLength={8}
-                  maxLength={30}
-                  // value={signupData.confirmPassword}
-                  disabled={loading}
-                  required
-                  endIcon={KeyRound}
-                  className={`rounded-xl shadow-none h-12 ${signupData.confirmPassword && !errors.confirmPassword ? '' : signupData.confirmPassword ? 'border-destructive focus-visible:border-destructive' : ''}`}
-                />
-                <WarningMessage
-                  name="confirmPassword"
-                  message={errors.confirmPassword}
-                  className="px-4"
-                />
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              variant="defaultCore"
-              disabled={!isFormValid || loading}
-              className={`h-12 w-full font-bold text-white rounded-xl cursor-pointer`}
-            >
-              {loading ? (
-                <Loading>Creating account...</Loading>
-              ) : (
-                'Create account'
+              <Button
+                type="submit"
+                variant="defaultCore"
+                disabled={!isFormValid || loading}
+                className={`h-12 w-full font-bold text-white rounded-xl cursor-pointer`}
+              >
+                {loading ? (
+                  <Loading>Creating account...</Loading>
+                ) : (
+                  'Create account'
+                )}
+              </Button>
+              {authError && (
+                <Alert
+                  variant="destructive"
+                  className="border-0 bg-core-background"
+                >
+                  <AlertCircleIcon strokeWidth={2.5} />
+                  <AlertTitle className="font-semibold">{authError}</AlertTitle>
+                </Alert>
               )}
-            </Button>
-            {authError && (
-              <Alert variant="destructive" className="border-0">
-                <AlertCircleIcon />
-                <AlertTitle>{authError}</AlertTitle>
-              </Alert>
-            )}
-          </form>
-        </CardContent>
-      </Card>
+            </form>
+            <div className="w-full py-3 flex justify-center items-center gap-2 text-sm text-muted-foreground">
+              <span>Already have an account?</span>
+              <Link to="/signin" className="text-core-foreground font-semibold">
+                Sign in
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

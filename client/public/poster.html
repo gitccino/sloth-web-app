@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>sloth. — App Poster</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f5e0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .poster {
+      width: 1200px;
+      height: 675px;
+      background: #f4f5e0;
+      border: 1px solid rgba(59, 60, 57, 0.1);
+      border-radius: 24px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.12);
+    }
+    .poster--left {
+      width: 45%;
+      background: #3b3c39;
+      padding: 3rem 2.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .poster--right {
+      width: 55%;
+      padding: 4rem 4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.5rem;
+      font-weight: 400;
+      color: #f4f5e0;
+      letter-spacing: -0.02em;
+    }
+    .tagline {
+      font-size: 0.95rem;
+      color: rgba(244, 245, 224, 0.7);
+      font-weight: 500;
+      margin-top: 0.5rem;
+      letter-spacing: 0.02em;
+    }
+    .todo-preview {
+      margin-top: 2rem;
+    }
+    .todo-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      color: rgba(244, 245, 224, 0.9);
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+    .todo-check {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(244, 245, 224, 0.5);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .todo-check.done {
+      background: #3139fc;
+      border-color: #3139fc;
+    }
+    .todo-check.done::after {
+      content: '✓';
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .todo-item.done .todo-text {
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+    .hero-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 4rem;
+      font-weight: 400;
+      color: #3b3c39;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: #696969;
+      font-weight: 500;
+      margin-top: 1rem;
+      max-width: 320px;
+    }
+    .cta {
+      margin-top: 2.5rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #3139fc;
+      color: white;
+      padding: 0.875rem 1.5rem;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-decoration: none;
+      width: fit-content;
+    }
+    .decor {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.15;
+    }
+    .decor-1 { width: 200px; height: 200px; background: #3139fc; top: -50px; right: 10%; }
+    .decor-2 { width: 120px; height: 120px; background: #3139fc; bottom: 20%; right: 5%; }
+  </style>
+</head>
+<body>
+  <div class="poster">
+    <div class="poster--left">
+      <div>
+        <div class="logo">sloth.</div>
+        <div class="tagline">Get things done. Your way.</div>
+        <div class="todo-preview">
+          <div class="todo-item done">
+            <div class="todo-check done"></div>
+            <span class="todo-text">Plan the week</span>
+          </div>
+          <div class="todo-item done">
+            <div class="todo-check done"></div>
+            <span class="todo-text">Ship the feature</span>
+          </div>
+          <div class="todo-item">
+            <div class="todo-check"></div>
+            <span class="todo-text">Write the docs</span>
+          </div>
+        </div>
+      </div>
+      <div style="font-size: 0.75rem; color: rgba(244,245,224,0.4);">Hono · React · Better Auth</div>
+    </div>
+    <div class="poster--right" style="position: relative;">
+      <div class="decor decor-1"></div>
+      <div class="decor decor-2"></div>
+      <h1 class="hero-title">Welcome Back</h1>
+      <p class="hero-subtitle">We are happy to see you again. Sign in and pick up where you left off.</p>
+      <div class="cta">Sign in →</div>
+    </div>
+  </div>
+</body>
+</html>

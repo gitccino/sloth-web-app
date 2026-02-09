@@ -32,13 +32,15 @@ export default function Header() {
 
   return (
     <>
-      <header className="relative px-6 py-2 h-20 pt-4 flex justify-between items-center bg-core-primary text-white">
-        <div className="flex justify-start items-center gap-2 font-bold">
-          <h1 className="text-xl">core</h1>
+      <header className="relative z-50 px-6 py-2 h-20 pt-4 flex justify-between items-center bg-core-primary text-white">
+        <div className="flex justify-start items-center gap-2 font-recoleta font-black">
+          <Link to="/">
+            <h1 className="text-2xl">sloth.</h1>
+          </Link>
         </div>
 
-        <nav className="z-20 flex items-center gap-2 text-sm">
-          <Button variant="ghostNav" size="sm" asChild>
+        <nav className="z-30 flex items-center gap-2 text-sm">
+          {/* <Button variant="ghostNav" size="sm" asChild>
             <Link
               to="/"
               className="group w-fit px-3 py-2 flex items-center gap-1 rounded-lg transition-colors"
@@ -50,7 +52,7 @@ export default function Header() {
               />
               <span className="font-bold">Home</span>
             </Link>
-          </Button>
+          </Button> */}
 
           {isSignedIn && (
             <Button variant="ghostNav" size="sm" asChild>
