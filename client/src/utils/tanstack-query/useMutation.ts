@@ -42,15 +42,19 @@ export const useUpdateTodo = () => {
       title,
       description,
       completed,
+      startAt,
+      dueAt,
     }: {
       id: string
       title?: string
       description?: string
       completed?: boolean
+      startAt?: string | null
+      dueAt?: string | null
     }) => {
       const res = await client.api.todos[':id'].$patch({
         param: { id },
-        json: { title, description, completed },
+        json: { title, description, completed, startAt, dueAt },
       })
       if (!res.ok) {
         const errorData = await res.json()

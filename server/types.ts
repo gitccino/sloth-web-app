@@ -21,17 +21,21 @@ export const todoInsertSchema = createInsertSchema(todos)
 export type TodoInsert = z.infer<typeof todoInsertSchema>;
 
 export const todoUpdateSchema = createUpdateSchema(todos)
-  .pick({ title: true, description: true, completed: true })
+  .pick({ title: true, description: true, completed: true, startAt: true, dueAt: true })
   .extend({
     title: z.string().min(1).max(500).optional(),
     description: z.string().max(1000).optional(),
     completed: z.boolean().optional(),
+    startAt: z.coerce.date().nullable().optional(),
+    dueAt: z.coerce.date().nullable().optional(),
   })
   .refine((data) => {
     return (
       data.title !== undefined ||
         data.description !== undefined ||
-        data.completed !== undefined,
+        data.completed !== undefined ||
+        data.startAt !== undefined ||
+        data.dueAt !== undefined,
       {
         message: "At least one field must be provided for update",
       }
