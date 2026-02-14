@@ -1,6 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { Check, Plus, Star, Tag, X } from 'lucide-react'
+import {
+  CalendarDays,
+  Check,
+  Flag,
+  FlagTriangleRight,
+  Plus,
+  Star,
+  Tag,
+  X,
+} from 'lucide-react'
 import { Checkbox } from './ui/checkbox'
 import {
   useAddTagToTodo,
@@ -37,8 +46,114 @@ export interface TodoComponentProps {
   onEditStart: (id: string) => void
   onEditEnd: (id: string) => void
   handleDeleteTodo: (id: string) => Promise<void>
+  startAt?: string | null
+  dueAt?: string | null
   tags?: Array<Tag>
   todoTags?: Array<Tag> // Tags already associated with this todo
+}
+
+function formatStartAt(dateStr: string) {
+  const date = new Date(dateStr)
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const target = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  const diffDays = Math.round(
+    (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+  )
+
+  // Today
+  if (diffDays === 0) {
+    return { icon: Star, label: 'Today', color: '#FFD400' }
+  }
+
+  // Tomorrow
+  if (diffDays === 1) {
+    return { icon: CalendarDays, label: 'Tomorrow', color: '#FA1855' }
+  }
+
+  // Rest of this week (2–6 days ahead, same week)
+  const dayOfWeek = now.getDay() // 0=Sun
+  const daysUntilEndOfWeek = 7 - dayOfWeek // days left including today
+  if (diffDays >= 2 && diffDays < daysUntilEndOfWeek) {
+    const label = target.toLocaleDateString('en-US', { weekday: 'long' })
+    return { icon: CalendarDays, label, color: '#FA1855' }
+  }
+
+  // Beyond this week
+  const label = target.toLocaleDateString('en-US', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  })
+  return { icon: CalendarDays, label, color: '#FA1855' }
+}
+
+function formatDueAt(dateStr: string) {
+  const date = new Date(dateStr)
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const target = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  const diffDays = Math.round(
+    (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+  )
+
+  // Days-left suffix
+  let remaining = ''
+  if (diffDays < 0) {
+    remaining = `${Math.abs(diffDays)}d overdue`
+  } else if (diffDays === 0) {
+    remaining = 'due today'
+  } else if (diffDays === 1) {
+    remaining = '1 day left'
+  } else {
+    remaining = `${diffDays} days left`
+  }
+
+  const isOverdue = diffDays < 0
+
+  // Today
+  if (diffDays === 0) {
+    return {
+      icon: Flag,
+      label: 'Today',
+      remaining,
+      color: '#FFD400',
+      isOverdue,
+    }
+  }
+
+  // Tomorrow
+  if (diffDays === 1) {
+    return {
+      icon: Flag,
+      label: 'Tomorrow',
+      remaining,
+      color: '#fff',
+      isOverdue,
+    }
+  }
+
+  // Rest of this week
+  const dayOfWeek = now.getDay()
+  const daysUntilEndOfWeek = 7 - dayOfWeek
+  if (diffDays >= 2 && diffDays < daysUntilEndOfWeek) {
+    const label = target.toLocaleDateString('en-US', { weekday: 'long' })
+    return { icon: Flag, label, remaining, color: '#fff', isOverdue }
+  }
+
+  // Beyond this week or overdue
+  const label = target.toLocaleDateString('en-US', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  })
+  return {
+    icon: Flag,
+    label,
+    remaining,
+    color: isOverdue ? '#EF4444' : '#fff',
+    isOverdue,
+  }
 }
 
 export const TodoComponent = React.memo(
@@ -52,20 +167,24 @@ export const TodoComponent = React.memo(
       onEditStart,
       onEditEnd,
       handleDeleteTodo,
+      startAt,
+      dueAt,
       tags = [],
       todoTags = [],
     } = props
-    console.log('Render')
     const [isEditing, setIsEditing] = useState(initialEditing)
     const [editedTitle, setEditedTitle] = useState(title)
     const [editedDesc, setEditedDesc] = useState(description)
     const [isTagMenuOpen, setIsTagMenuOpen] = useState(false)
     const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+    const [isDueCalendarOpen, setIsDueCalendarOpen] = useState(false)
     const [tagSearch, setTagSearch] = useState('')
     const tagMenuCloseTimeRef = useRef(0)
     const calendarCloseTimeRef = useRef(0)
+    const dueCalendarCloseTimeRef = useRef(0)
     const isTagMenuOpenRef = useRef(false)
     const isCalendarOpenRef = useRef(false)
+    const isDueCalendarOpenRef = useRef(false)
 
     const updateTodoMutation = useUpdateTodo()
     const addTagToTodoMutation = useAddTagToTodo()
@@ -200,6 +319,20 @@ export const TodoComponent = React.memo(
       })
     }
 
+    const handleSelectDueDate = async (date: Date | null) => {
+      await updateTodoMutation.mutateAsync({
+        id,
+        dueAt: date ? date.toISOString() : null,
+      })
+    }
+
+    const handleSelectStartDate = async (date: Date | null) => {
+      await updateTodoMutation.mutateAsync({
+        id,
+        startAt: date ? date.toISOString() : null,
+      })
+    }
+
     const handleKeyDown = (event: React.KeyboardEvent<HTMLFormElement>) => {
       // console.log('handleKeyDown')
       const isTextArea = event.target instanceof HTMLTextAreaElement
@@ -236,10 +369,21 @@ export const TodoComponent = React.memo(
       // Ignore phantom close caused by Radix dismiss cascade when the
       // tag menu just closed from the same pointer event sequence.
       if (!open && Date.now() - tagMenuCloseTimeRef.current < 300) return
+      if (!open && Date.now() - dueCalendarCloseTimeRef.current < 300) return
       setIsCalendarOpen(open)
       isCalendarOpenRef.current = open
       if (!open) {
         calendarCloseTimeRef.current = Date.now()
+      }
+    }
+
+    const handleChangeDueCalendar = (open: boolean) => {
+      if (!open && Date.now() - tagMenuCloseTimeRef.current < 300) return
+      if (!open && Date.now() - calendarCloseTimeRef.current < 300) return
+      setIsDueCalendarOpen(open)
+      isDueCalendarOpenRef.current = open
+      if (!open) {
+        dueCalendarCloseTimeRef.current = Date.now()
       }
     }
 
@@ -262,12 +406,18 @@ export const TodoComponent = React.memo(
 
         // Don't save while a portaled dropdown/popover is open — their content
         // lives outside the todo DOM tree but should be treated as "inside".
-        if (isTagMenuOpenRef.current || isCalendarOpenRef.current) return
+        if (
+          isTagMenuOpenRef.current ||
+          isCalendarOpenRef.current ||
+          isDueCalendarOpenRef.current
+        )
+          return
 
         // If the tag dropdown or calendar just closed (<300ms ago), this click was the one
         // that dismissed it — don't also exit editing mode.
         if (Date.now() - tagMenuCloseTimeRef.current < 300) return
         if (Date.now() - calendarCloseTimeRef.current < 300) return
+        if (Date.now() - dueCalendarCloseTimeRef.current < 300) return
 
         // Don't trigger when clicking elements that should handle their own click (e.g. delete button)
         if (
@@ -312,7 +462,7 @@ export const TodoComponent = React.memo(
               data-checkbox
               checked={completed}
               onCheckedChange={handleToggleComplete}
-              className="mt-0.5 border-core-background/30 data-[state=checked]:border-0 data-[state=checked]:bg-[#18AEF8] data-[state=checked]:text-core-foreground"
+              className="size-3 mt-1 rounded-[3px] border-core-background/30 data-[state=checked]:border-0 data-[state=checked]:bg-[#18AEF8] data-[state=checked]:text-core-foreground"
             />
             <div className="w-full flex flex-col justify-start items-start">
               <div onClick={handleInitEditing} className="relative w-full">
@@ -420,23 +570,89 @@ export const TodoComponent = React.memo(
                   ))}
                 </div>
               )}
-              <div className="mt-2 flex justify-between">
-                <Button
-                  type="button"
-                  variant="none"
-                  size="sm"
-                  className="group h-6 hover:bg-[#4c4c50] rounded-md [&_svg]:pointer-events-auto"
-                >
-                  <Star size={12} color="#FFD400" fill="#FFD400" />
-                  <span>Today</span>
-                  <X className="ml-1 size-3 invisible group-hover:visible hover:text-core-destructive" />
-                </Button>
+              <div className="mt-2 flex justify-between items-end">
+                <div className="flex flex-col items-start">
+                  {startAt &&
+                    (() => {
+                      const {
+                        icon: StartIcon,
+                        label,
+                        color,
+                      } = formatStartAt(startAt)
+                      return (
+                        <Button
+                          type="button"
+                          variant="none"
+                          size="sm"
+                          className="group h-6 hover:bg-[#4c4c50] rounded-md [&_svg]:pointer-events-auto text-xs gap-0.75 font-semibold"
+                        >
+                          <StartIcon
+                            className="size-3"
+                            color={color}
+                            {...(StartIcon === Star ? { fill: color } : {})}
+                          />
+                          <span>{label}</span>
+                          <X
+                            className="ml-1 size-3 invisible group-hover:visible cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleSelectStartDate(null)
+                            }}
+                          />
+                        </Button>
+                      )
+                    })()}
+                  {dueAt &&
+                    (() => {
+                      const {
+                        icon: DueIcon,
+                        label,
+                        remaining,
+                        color,
+                        isOverdue,
+                      } = formatDueAt(dueAt)
+                      return (
+                        <Button
+                          type="button"
+                          variant="none"
+                          size="sm"
+                          className="group h-6 hover:bg-[#4c4c50] rounded-md [&_svg]:pointer-events-auto text-xs gap-0.75 font-semibold"
+                        >
+                          <DueIcon
+                            fill={color}
+                            className="size-3"
+                            style={{ color }}
+                          />
+                          <span>Deadline: {label}</span>
+                          <span
+                            className={cn(
+                              'text-[0.65rem] opacity-60',
+                              isOverdue && 'text-red-400 opacity-100',
+                            )}
+                          >
+                            {remaining}
+                          </span>
+                          <X
+                            className="ml-1 size-3 invisible group-hover:visible cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleSelectDueDate(null)
+                            }}
+                          />
+                        </Button>
+                      )
+                    })()}
+                </div>
 
                 <div className="flex items-center gap-0.5">
-                  <CalendarDropdown
-                    open={isCalendarOpen}
-                    onOpenChange={handleChangeCalendar}
-                  />
+                  {!startAt && (
+                    <CalendarDropdown
+                      open={isCalendarOpen}
+                      onOpenChange={handleChangeCalendar}
+                      selectedDate={startAt ? new Date(startAt) : null}
+                      onSelectDate={handleSelectStartDate}
+                    />
+                  )}
 
                   <DropdownMenu
                     data-ignore-click-outside
@@ -545,6 +761,16 @@ export const TodoComponent = React.memo(
                       )}
                     </DropdownMenuContent>
                   </DropdownMenu>
+
+                  {!dueAt && (
+                    <CalendarDropdown
+                      open={isDueCalendarOpen}
+                      onOpenChange={handleChangeDueCalendar}
+                      selectedDate={dueAt ? new Date(dueAt) : null}
+                      onSelectDate={handleSelectDueDate}
+                      icon={Flag}
+                    />
+                  )}
                 </div>
               </div>
             </motion.div>

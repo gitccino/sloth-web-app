@@ -8,6 +8,7 @@ import {
   Plus,
   Star,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -31,6 +32,7 @@ interface CalendarDropdownProps {
   onSelectDate?: (date: Date | null) => void
   open?: boolean
   onOpenChange?: (open: boolean) => void
+  icon?: LucideIcon
 }
 
 export function CalendarDropdown({
@@ -38,6 +40,7 @@ export function CalendarDropdown({
   onSelectDate,
   open,
   onOpenChange,
+  icon: Icon = CalendarDays,
 }: CalendarDropdownProps) {
   const today = new Date()
   const [viewYear, setViewYear] = useState(today.getFullYear())
@@ -111,11 +114,11 @@ export function CalendarDropdown({
     onOpenChange?.(false)
   }
 
-  const handleSelectSomeday = () => {
-    // Someday = no specific date, just a marker
-    onSelectDate?.(null)
-    onOpenChange?.(false)
-  }
+  // const handleSelectSomeday = () => {
+  //   // Someday = no specific date, just a marker
+  //   onSelectDate?.(null)
+  //   onOpenChange?.(false)
+  // }
 
   // Build calendar grid cells
   const cells: Array<{
@@ -162,7 +165,7 @@ export function CalendarDropdown({
             open && 'bg-sloth-background-hover-2',
           )}
         >
-          <CalendarDays size={12} />
+          <Icon size={12} />
         </Button>
       </PopoverTrigger>
       <PopoverContent

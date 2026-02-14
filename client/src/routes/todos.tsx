@@ -259,6 +259,8 @@ function RouteComponent() {
                   onEditStart={handleEditStart}
                   onEditEnd={handleEditEnd}
                   handleDeleteTodo={handleDeleteTodo}
+                  startAt={todo.startAt}
+                  dueAt={todo.dueAt}
                   tags={tags}
                   todoTags={todo.tags}
                 />
