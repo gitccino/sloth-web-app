@@ -19,6 +19,8 @@ export const todos = pgTable("todos", {
   title: varchar({ length: 500 }).notNull(),
   description: varchar({ length: 1000 }),
   completed: boolean().notNull().default(false),
+  startAt: timestamp("start_at", { withTimezone: true }),
+  dueAt: timestamp("due_at", { withTimezone: true }),
   createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 });
