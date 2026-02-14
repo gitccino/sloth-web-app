@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { Link, createFileRoute, useRouter } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 
 // icons
@@ -7,11 +7,14 @@ import {
   AlertCircleIcon,
   CalendarDays,
   Ellipsis,
+  Home,
   Inbox,
   Layers,
+  LogOut,
   Plus,
   Star,
   Trash2,
+  X,
 } from 'lucide-react'
 
 // Hono RPC
@@ -20,17 +23,18 @@ import { motion } from 'motion/react'
 import type { AppType } from '../../../server/index.ts'
 
 // shadcn/ui
-import { Skeleton } from '@/components/ui/skeleton'
+// import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { authClient } from '@/lib/auth-client.ts'
 import { Button } from '@/components/ui/button.tsx'
 import { TodoComponent } from '@/components/todo.tsx'
 
-import { useNavStore } from '@/lib/store.ts'
+// import { useNavStore } from '@/lib/store.ts'
 
-import { cn } from '@/lib/utils.ts'
+// import { cn } from '@/lib/utils.ts'
 import {
   useCreateTodo,
+  useDeleteTag,
   useDeleteTodo,
 } from '@/utils/tanstack-query/useMutation.ts'
 
@@ -51,12 +55,23 @@ function RouteComponent() {
       return res.json()
     },
   })
+
+  const { data: tags } = useQuery({
+    queryKey: ['tags'],
+    queryFn: async () => {
+      const res = await client.api.tags.$get()
+      if (!res.ok) throw new Error('failed to fetch tags')
+      return res.json()
+    },
+  })
+
   const [editingTodoId, setEditingTodoId] = useState<string | null>(null)
   const [isEditingMode, setIsEditingMode] = useState(false)
   const createTodoMutation = useCreateTodo()
   const deleteTodoMutation = useDeleteTodo()
+  const deleteTagMutation = useDeleteTag()
 
-  const hideDisplay = useNavStore((state) => state.hideDisplay)
+  // const hideDisplay = useNavStore((state) => state.hideDisplay)
 
   const handleEditStart = (id: string) => {
     setEditingTodoId(id)
@@ -68,7 +83,8 @@ function RouteComponent() {
   }
 
   const handleCreateNewTodo = async () => {
-    await createTodoMutation.mutateAsync({ title: 'New todo' })
+    const newTodo = await createTodoMutation.mutateAsync({ title: 'New todo' })
+    handleEditStart(newTodo.data.id)
   }
 
   const handleDeleteTodo = async () => {
@@ -77,9 +93,18 @@ function RouteComponent() {
     handleEditEnd()
   }
 
-  useEffect(() => {
-    hideDisplay()
-  }, [hideDisplay])
+  const handleSignout = async () => {
+    try {
+      await authClient.signOut()
+      router.navigate({ to: '/' })
+    } catch (err) {
+      console.error('Signout failed', err)
+    }
+  }
+
+  // useEffect(() => {
+  //   hideDisplay()
+  // }, [hideDisplay])
 
   useEffect(() => {
     // console.log('/todos page useEffect')
@@ -89,8 +114,8 @@ function RouteComponent() {
   }, [session, router, isPending])
 
   return (
-    <div className="relative flex justify-start min-h-[calc(100dvh)] pt-0 text-core-background">
-      <div className="w-65 px-2 py-10 bg-[#1e1d21] flex flex-col items-start gap-4">
+    <div className="relative flex justify-start min-h-[calc(100dvh-80px)] pt-0 text-core-background">
+      <div className="w-65 px-2 py-4 bg-sloth-aside-background ml-4 mb-4 flex flex-col items-start gap-4 rounded-lg">
         <Button
           variant="none"
           size="sm"
@@ -142,8 +167,62 @@ function RouteComponent() {
             <span>Add new todo</span>
           </Button>
         </div>
+
+        <div className="w-[90%] self-center border-white/5 border-[0.5px]" />
+
+        <div className="w-full">
+          {tags &&
+            tags.map((tag) => (
+              <Button
+                key={`tag-${tag.id}`}
+                variant="none"
+                size="sm"
+                className="group/tag h-fit py-1 w-full font-medium gap-1.5 flex justify-start items-center"
+              >
+                <div
+                  className="w-3 h-3 shrink-0"
+                  style={{ backgroundColor: tag.color || '#808080' }}
+                ></div>
+                <span className="flex-1 text-left truncate">{tag.name}</span>
+                <span
+                  className="invisible group-hover/tag:visible shrink-0 p-0.5 rounded hover:text-sloth-destructive"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    deleteTagMutation.mutate({ id: tag.id })
+                  }}
+                >
+                  <X strokeWidth={2.5} className="size-3" />
+                </span>
+              </Button>
+            ))}
+        </div>
+
+        <div className="w-full mt-auto flex flex-col gap-0">
+          {/* <Button
+            variant="none"
+            size="sm"
+            className="h-fit py-1 w-full font-medium gap-1.5 flex justify-start"
+            asChild
+          >
+            <Link to="/">
+              <Home size={12} color="#18AEF8" />
+              <span>Home</span>
+            </Link>
+          </Button> */}
+
+          <Button
+            variant="none"
+            size="sm"
+            className="h-fit py-1 w-full font-medium gap-1.5 flex justify-start"
+            onClick={handleSignout}
+          >
+            <LogOut size={12} color="#e84b58" />
+            <span>Logout</span>
+          </Button>
+        </div>
       </div>
-      <div className="relative w-full flex items-start justify-center p-20 bg-[#262528]">
+
+      <div className="relative w-full flex items-start justify-center px-10 py-6 bg-[#262528]">
         <div className="w-full flex flex-col items-start gap-4">
           {/* {isLoading && (
             <div className="flex flex-col gap-2">
@@ -172,9 +251,12 @@ function RouteComponent() {
                   title={todo.title}
                   description={todo.description}
                   completed={todo.completed}
+                  initialEditing={editingTodoId === todo.id}
                   onEditStart={handleEditStart}
                   onEditEnd={handleEditEnd}
                   handleDeleteTodo={handleDeleteTodo}
+                  tags={tags}
+                  todoTags={todo.tags || []}
                 />
               ))}
 

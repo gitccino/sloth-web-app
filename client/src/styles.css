@@ -136,9 +136,17 @@ code {
   --core-muted-foreground: #696969;
   --core-border: #a9a5a2;
   --core-accent: #fffbeb;
-  /* #e0dfcd */
   --core-card: #e0dfcd;
   --core-destructive: #e84b58;
+
+  /* New palette */
+  --sloth-background: #262528;
+  --sloth-background-hover: #343338;
+  --sloth-background-hover-2: #4c4c50;
+  --sloth-aside-background: #1e1d21;
+  --sloth-aside-background-hover: #3b3c3f50;
+  --sloth-foreground: #f4f5e0;
+  --sloth-destructive: #e84b58;
 }
 
 @theme {
@@ -148,25 +156,14 @@ code {
 
 @layer base {
   :root {
-    @apply bg-core-background text-core-foreground overflow-x-hidden;
+    @apply bg-sloth-background text-sloth-foreground overflow-x-hidden;
     overscroll-behavior: none;
   }
-
-  /* :root {
-    background-color: var(--background);
-    color: var(--foreground);
-  } */
-
-  /* body {
-    background-color: var(--background);
-    color: var(--foreground);
-    min-height: 100vh;
-  } */
 }
 
 @layer utilities {
   .bt {
-    @apply border border-core-background/10;
+    @apply border border-sloth-foreground/10;
   }
 }
 
@@ -227,6 +224,15 @@ code {
   --color-core-accent: var(--core-accent);
   --color-core-card: var(--core-card);
   --color-core-destructive: var(--core-destructive);
+
+  /* New palette */
+  --color-sloth-background: var(--sloth-background);
+  --color-sloth-background-hover: var(--sloth-background-hover);
+  --color-sloth-background-hover-2: var(--sloth-background-hover-2);
+  --color-sloth-aside-background: var(--sloth-aside-background);
+  --color-sloth-aside-background-hover: var(--sloth-aside-background-hover);
+  --color-sloth-foreground: var(--sloth-foreground);
+  --color-sloth-destructive: var(--sloth-destructive);
 }
 
 .dark {
@@ -270,7 +276,7 @@ code {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-core-background text-core-foreground;
+    @apply bg-sloth-background text-sloth-foreground;
   }
 }
 

@@ -7,7 +7,7 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
+  // CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
@@ -217,25 +217,20 @@ function RouteComponent() {
   }
 
   return (
-    <div className="relative flex items-center justify-center min-h-[calc(100vh-80px)] mt-10 px-[5%]">
-      <div className="register-bg-container min-h-[600px] w-120 p-10 text-core-background flex items-center">
+    <div className="relative flex items-center justify-center min-h-[calc(100vh-80px)] px-[5%] bg-sloth-background text-sloth-foreground">
+      <div className="min-h-[600px] w-120 p-10 text-core-background flex items-center">
         <img src={RegisterArt} />
       </div>
       <div className="min-h-[calc(100vh-120px)] w-100 flex flex-col justify-center items-start pb-20">
-        <Button
-          variant="ghostNav"
-          size="sm"
-          className="ml-6 hover:bg-core-card"
-          asChild
-        >
+        <Button variant="ghostNav" size="sm" className="ml-4" asChild>
           <Link to="/">
             <ArrowLeft size={12} />
             <h1>Back to Home</h1>
           </Link>
         </Button>
-        <Card className="w-full max-w-sm shadow-none bg-core-background">
+        <Card className="w-full max-w-sm shadow-none bg-sloth-background text-sloth-foreground">
           <CardHeader className="w-full flex flex-col items-start gap-1 px-8">
-            <CardTitle className="font-recoleta font-bold text-3xl text-core-foreground">
+            <CardTitle className="font-recoleta font-bold text-3xl">
               Create an account
             </CardTitle>
             <CardDescription className="pl-0.5 font-normal">
@@ -350,6 +345,7 @@ function RouteComponent() {
                 type="submit"
                 variant="defaultCore"
                 disabled={!isFormValid || loading}
+                hidden={!isFormValid}
                 className={`h-12 w-full font-bold text-white rounded-xl cursor-pointer`}
               >
                 {loading ? (
@@ -370,7 +366,7 @@ function RouteComponent() {
             </form>
             <div className="w-full py-3 flex justify-center items-center gap-2 text-sm text-muted-foreground">
               <span>Already have an account?</span>
-              <Link to="/signin" className="text-core-foreground font-semibold">
+              <Link to="/signin" className="text-sloth-foreground">
                 Sign in
               </Link>
             </div>

@@ -7,17 +7,18 @@ import { motion } from 'motion/react'
 import { authClient } from '@/lib/auth-client'
 import { Button } from '@/components/ui/button'
 import { useNavStore } from '@/lib/store'
+import { SlothLogo } from '@/assets'
 
 export default function Header() {
-  const location = useLocation()
+  // const location = useLocation()
   const { data: session, isPending } = authClient.useSession()
   const [isSignedIn, setIsSignedIn] = useState(false)
 
   const display = useNavStore((state) => state.display)
 
-  if (location.pathname === '/todos') {
-    return null
-  }
+  // if (location.pathname === '/todos') {
+  //   return null
+  // }
   // const toggleDisplay = useNavStore((state) => state.toggleDisplay)
 
   const handleSignout = async () => {
@@ -68,28 +69,16 @@ export default function Header() {
           },
         }}
       >
-        <header className="z-50 relative bg-noise-container z-50 px-6 py-2 h-20 pt-4 flex justify-between items-center bg-[#99705c]  text-white">
+        <header className="z-50 relative px-6 py-2 h-20 flex justify-between items-center bg-sloth-background">
           <div className="flex justify-start items-center gap-2 font-recoleta font-black">
-            <Link to="/">
-              <h1 className="text-2xl">sloth.</h1>
+            <Link to="/" className="flex items-center gap-3">
+              {/* <h1 className="text-2xl">Sloth</h1> */}
+              <img src={SlothLogo} className="size-8 rounded-md" />
+              <h1 className="text-2xl">Sloth</h1>
             </Link>
           </div>
 
           <nav className="z-30 flex items-center gap-2 text-sm">
-            {/* <Button variant="ghostNav" size="sm" asChild>
-            <Link
-              to="/"
-              className="group w-fit px-3 py-2 flex items-center gap-1 rounded-lg transition-colors"
-              // activeProps={{ className: 'font-bold' }}
-            >
-              <Home
-                className="size-3 opacity-50 group-data-[status=active]:opacity-100"
-                strokeWidth={2.5}
-              />
-              <span className="font-bold">Home</span>
-            </Link>
-          </Button> */}
-
             {isSignedIn && (
               <Button variant="ghostNav" size="sm" asChild>
                 <Link
@@ -135,7 +124,7 @@ export default function Header() {
             )}
           </nav>
 
-          <div className="z-10 nav-splitter" />
+          {/* <div className="z-10 nav-splitter" /> */}
         </header>
       </motion.div>
     </>

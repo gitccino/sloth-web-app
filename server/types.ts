@@ -1,5 +1,5 @@
 import { auth } from "./lib/auth";
-import { todos } from "./db/schema";
+import { todos, tags } from "./db/schema";
 import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -38,3 +38,25 @@ export const todoUpdateSchema = createUpdateSchema(todos)
     );
   });
 export type TodoUpdate = z.infer<typeof todoUpdateSchema>;
+
+export type Tag = typeof tags.$inferSelect;
+export const tagInsertSchema = createInsertSchema(tags)
+  .pick({ name: true, color: true })
+  .extend({
+    name: z.string().min(1, { message: "Tag name is required" }).max(100),
+    color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, { message: "Color must be a valid hex code (e.g., #FFD400)" }).optional(),
+  });
+export type TagInsert = z.infer<typeof tagInsertSchema>;
+
+export const tagUpdateSchema = createUpdateSchema(tags)
+  .pick({ name: true, color: true })
+  .extend({
+    name: z.string().min(1).max(100).optional(),
+    color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, { message: "Color must be a valid hex code (e.g., #FFD400)" }).optional(),
+  })
+  .refine((data) => {
+    return data.name !== undefined || data.color !== undefined;
+  }, {
+    message: "At least one field (name or color) must be provided for update",
+  });
+export type TagUpdate = z.infer<typeof tagUpdateSchema>;

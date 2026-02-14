@@ -11,7 +11,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: 'bg-primary text-primary-foreground hover:bg-primary/90',
-        defaultCore: 'bg-core-foreground',
+        defaultCore: 'bg-sloth-aside-background',
         destructive:
           'bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
         destructiveGhost:
@@ -22,7 +22,8 @@ const buttonVariants = cva(
           'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         ghost:
           'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
-        ghostNav: 'hover:bg-black/30 hover:backdrop-blur-sm',
+        ghostNav: 'hover:scale-[100%] transition-transform',
+        // ghostNav: 'hover:bg-black/30 hover:backdrop-blur-sm',
         link: 'text-primary underline-offset-4 hover:underline',
         linkAnimated: 'link-hover',
         none: 'hover:bg-[#3b3c3f50]',
@@ -34,6 +35,7 @@ const buttonVariants = cva(
         icon: 'size-9',
         'icon-sm': 'size-8',
         'icon-lg': 'size-10',
+        none: '',
       },
     },
     defaultVariants: {

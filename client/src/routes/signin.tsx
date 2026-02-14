@@ -1,7 +1,7 @@
 import {
   Link,
   createFileRoute,
-  redirect,
+  // redirect,
   useRouter,
 } from '@tanstack/react-router'
 import { AlertCircleIcon, ArrowLeft, KeyRound, Mail } from 'lucide-react'
@@ -22,7 +22,7 @@ import { Loading } from '@/components/Loading'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { useNavStore } from '@/lib/store'
 import { RegisterArt } from '@/assets'
-import registerBg2 from '@/assets/register-bg-2.png'
+// import registerBg2 from '@/assets/register-bg-2.png'
 
 export const Route = createFileRoute('/signin')({
   component: RouteComponent,
@@ -128,25 +128,20 @@ function RouteComponent() {
   }, [hideDisplay])
 
   return (
-    <div className="relative flex items-center justify-center min-h-[calc(100vh-80px)] mt-10 px-[5%] bg-core-background">
-      <div className="register-bg-container min-h-[600px] w-120 p-10 text-core-background flex items-center">
+    <div className="relative flex items-center justify-center min-h-[calc(100vh-80px)] px-[5%] bg-sloth-background text-sloth-foreground">
+      <div className="min-h-[600px] w-120 p-10 text-core-background flex items-center">
         <img src={RegisterArt} />
       </div>
       <div className="min-h-[calc(100vh-120px)] w-100 flex flex-col justify-center items-start pb-20">
-        <Button
-          variant="ghostNav"
-          size="sm"
-          className="ml-6 hover:bg-core-card"
-          asChild
-        >
+        <Button variant="ghostNav" size="sm" className="ml-4" asChild>
           <Link to="/">
             <ArrowLeft size={12} />
             <h1>Back to Home</h1>
           </Link>
         </Button>
-        <Card className="w-full h-fit max-w-md shadow-none bg-core-background">
+        <Card className="w-full h-fit max-w-md shadow-none bg-sloth-background text-sloth-foreground">
           <CardHeader className="w-full flex flex-col items-start gap-1 px-8">
-            <CardTitle className="font-recoleta font-bold text-3xl text-core-foreground">
+            <CardTitle className="font-recoleta font-bold text-3xl">
               Welcome Back
             </CardTitle>
             <CardDescription className="pl-0.5 font-normal">
@@ -218,7 +213,8 @@ function RouteComponent() {
                 type="submit"
                 variant="defaultCore"
                 disabled={!isFormValid || loading}
-                className={`h-12 w-full font-bold text-white rounded-xl cursor-pointer`}
+                hidden={!isFormValid}
+                className={`h-12 w-full font-bold rounded-xl cursor-pointer`}
               >
                 {loading ? <Loading>Signing in...</Loading> : 'Sign in'}
               </Button>
@@ -234,7 +230,7 @@ function RouteComponent() {
             </form>
             <div className="w-full py-3 flex justify-center items-center gap-2 text-sm text-muted-foreground">
               <span>Don't have an account?</span>
-              <Link to="/signup" className="text-core-foreground font-semibold">
+              <Link to="/signup" className="text-sloth-foreground">
                 Create an account
               </Link>
             </div>
