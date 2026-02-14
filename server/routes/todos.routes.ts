@@ -102,6 +102,12 @@ export const todos = new Hono<HonoEnv>()
       );
     } catch (error: any) {
       console.error("Error adding tag to todo:", error);
+      if (error.message === "Todo not found" || error.message === "Tag not found") {
+        return c.json(
+          { success: false, error: error.message },
+          404,
+        );
+      }
       return c.json(
         { success: false, error: error.message || "Failed to add tag to todo" },
         500,
@@ -130,6 +136,12 @@ export const todos = new Hono<HonoEnv>()
       );
     } catch (error: any) {
       console.error("Error removing tag from todo:", error);
+      if (error.message === "Todo not found" || error.message === "Tag not found") {
+        return c.json(
+          { success: false, error: error.message },
+          404,
+        );
+      }
       return c.json(
         { success: false, error: error.message || "Failed to remove tag from todo" },
         500,
