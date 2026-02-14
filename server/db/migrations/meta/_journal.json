@@ -36,6 +36,13 @@
       "when": 1770812573225,
       "tag": "0004_equal_echo",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1771089998140,
+      "tag": "0005_perfect_goblin_queen",
+      "breakpoints": true
     }
   ]
 }
