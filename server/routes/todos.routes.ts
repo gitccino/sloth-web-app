@@ -40,7 +40,6 @@ export const todos = new Hono<HonoEnv>()
     const user = c.get("user");
     const todoId = c.req.param("id");
     const validatedTodo = c.req.valid("json");
-    console.log(validatedTodo)
     try {
       const updatedTodo = await updateTodo(user.id, todoId, validatedTodo);
       return c.json(
