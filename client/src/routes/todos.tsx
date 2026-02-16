@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, createFileRoute, useRouter } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 
 // icons
 import {
   AlertCircleIcon,
   CalendarDays,
+  ChevronLeft,
   Ellipsis,
-  Home,
   Inbox,
   Layers,
   LogOut,
@@ -20,18 +20,28 @@ import {
 // Hono RPC
 import { hc } from 'hono/client'
 import { motion } from 'motion/react'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import type { AppType } from '../../../server/index.ts'
 
 // shadcn/ui
-// import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { authClient } from '@/lib/auth-client.ts'
 import { Button } from '@/components/ui/button.tsx'
 import { TodoComponent } from '@/components/todo.tsx'
-
-// import { useNavStore } from '@/lib/store.ts'
-
-// import { cn } from '@/lib/utils.ts'
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuAction,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarSeparator,
+  SidebarTrigger,
+} from '@/components/ui/sidebar'
 import {
   useCreateTodo,
   useDeleteTag,
@@ -106,9 +116,11 @@ function RouteComponent() {
     }
   }
 
-  // useEffect(() => {
-  //   hideDisplay()
-  // }, [hideDisplay])
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  useHotkey('Mod+B', () => {
+    setSidebarOpen((prev) => !prev)
+  })
 
   useEffect(() => {
     // console.log('/todos page useEffect')
@@ -118,127 +130,129 @@ function RouteComponent() {
   }, [session, router, isPending])
 
   return (
-    <div className="relative flex justify-start min-h-[calc(100dvh-80px)] pt-0 text-core-background">
-      <div className="w-65 px-2 py-4 bg-sloth-aside-background ml-4 mb-4 flex flex-col items-start gap-4 rounded-lg">
-        <Button
-          variant="none"
-          size="sm"
-          className="h-fit py-1 w-full font-medium gap-1.5 flex justify-start"
-        >
-          <Inbox size={12} color="#18AEF8" />
-          <span>Inbox</span>
-        </Button>
+    <SidebarProvider
+      open={sidebarOpen}
+      onOpenChange={setSidebarOpen}
+      className="text-core-background"
+    >
+      <Sidebar collapsible="icon" className="border-0!">
+        <SidebarHeader className="flex items-end p-1">
+          <SidebarTrigger className="mr-1 size-6 text-core-muted-foreground hover:text-sloth-foreground hover:bg-sloth-aside-background-hover" />
+        </SidebarHeader>
+        <SidebarContent className="gap-2 overflow-x-hidden">
+          <SidebarGroup className="p-0 px-2">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Inbox" className="h-7 font-medium">
+                  <Inbox color="#18AEF8" />
+                  <span>Inbox</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
 
-        <div className="w-full flex flex-col items-start gap-0">
-          <Button
-            variant="none"
-            size="sm"
-            className="h-fit py-1 w-full font-medium gap-1.5 flex justify-start"
-          >
-            <Star size={12} color="#FFD400" fill="#FFD400" />
-            <span>Today</span>
-          </Button>
-
-          <Button
-            variant="none"
-            size="sm"
-            className="h-fit py-1 w-full font-medium gap-1.5 flex justify-start"
-          >
-            <CalendarDays size={12} color="#FA1855" />
-            <span>Upcoming</span>
-          </Button>
-
-          <Button
-            variant="none"
-            size="sm"
-            className="h-fit py-1 w-full font-medium gap-1.5 flex justify-start"
-          >
-            <Layers size={12} color="#39A99D" />
-            <span>Anytime</span>
-          </Button>
-        </div>
-
-        <div className="w-[90%] self-center border-white/5 border-[0.5px]" />
-
-        <div className="w-full flex flex-col items-start gap-0">
-          <Button
-            variant="none"
-            size="sm"
-            className="h-fit py-1 w-full font-medium gap-1.5 flex justify-start"
-            onClick={handleCreateNewTodo}
-          >
-            <Plus size={12} />
-            <span>Add new todo</span>
-          </Button>
-        </div>
-
-        <div className="w-[90%] self-center border-white/5 border-[0.5px]" />
-
-        <div className="w-full">
-          {tags &&
-            tags.map((tag) => (
-              <Button
-                key={`tag-${tag.id}`}
-                variant="none"
-                size="sm"
-                className="group/tag h-fit py-1 w-full font-medium gap-1.5 flex justify-start items-center"
-              >
-                <div
-                  className="w-3 h-3 shrink-0"
-                  style={{ backgroundColor: tag.color || '#808080' }}
-                ></div>
-                <span className="flex-1 text-left truncate">{tag.name}</span>
-                <span
-                  className="invisible group-hover/tag:visible shrink-0 p-0.5 rounded hover:text-sloth-destructive"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    deleteTagMutation.mutate({ id: tag.id })
-                  }}
+          <SidebarGroup className="p-0 px-2">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Today" className="h-7 font-medium">
+                  <Star color="#FFD400" fill="#FFD400" />
+                  <span>Today</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  tooltip="Upcoming"
+                  className="h-7 font-medium"
                 >
-                  <X strokeWidth={2.5} className="size-3" />
-                </span>
-              </Button>
-            ))}
-        </div>
+                  <CalendarDays color="#FA1855" />
+                  <span>Upcoming</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  tooltip="Anytime"
+                  className="h-7 font-medium"
+                >
+                  <Layers color="#39A99D" />
+                  <span>Anytime</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
 
-        <div className="w-full mt-auto flex flex-col gap-0">
-          {/* <Button
-            variant="none"
-            size="sm"
-            className="h-fit py-1 w-full font-medium gap-1.5 flex justify-start"
-            asChild
-          >
-            <Link to="/">
-              <Home size={12} color="#18AEF8" />
-              <span>Home</span>
-            </Link>
-          </Button> */}
+          <SidebarSeparator className="bg-white/5" />
 
-          <Button
-            variant="none"
-            size="sm"
-            className="h-fit py-1 w-full font-medium gap-1.5 flex justify-start"
-            onClick={handleSignout}
-          >
-            <LogOut size={12} color="#e84b58" />
-            <span>Logout</span>
-          </Button>
-        </div>
-      </div>
+          <SidebarGroup className="p-0 px-2">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  tooltip="Add new todo"
+                  className="h-7 font-medium"
+                  onClick={handleCreateNewTodo}
+                >
+                  <Plus />
+                  <span>Add new todo</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
 
-      <div className="relative w-full flex items-start justify-center px-10 py-6 bg-[#262528]">
-        <div className="w-full flex flex-col items-start gap-4">
-          {/* {isLoading && (
-            <div className="flex flex-col gap-2">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <Skeleton className="h-4 w-4 rounded-lg" />
-                  <Skeleton className="h-5 w-40 rounded-lg" />
-                </div>
+          <SidebarSeparator className="bg-white/5" />
+
+          <SidebarGroup className="p-0 px-2">
+            <SidebarMenu>
+              {tags?.map((tag) => (
+                <SidebarMenuItem
+                  key={`tag-${tag.id}`}
+                  className="flex items-center hover:bg-sloth-aside-background-hover rounded-md"
+                >
+                  <SidebarMenuButton
+                    variant="none"
+                    tooltip={tag.name}
+                    className="h-7 font-medium"
+                  >
+                    <div className="size-4 shrink-0 flex items-center justify-center">
+                      <div
+                        className="size-3 rounded"
+                        style={{ backgroundColor: tag.color || '#808080' }}
+                      />
+                    </div>
+                    <span>{tag.name}</span>
+                  </SidebarMenuButton>
+                  <SidebarMenuAction
+                    showOnHover
+                    className="hover:text-sloth-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      deleteTagMutation.mutate({ id: tag.id })
+                    }}
+                  >
+                    <X strokeWidth={2.5} className="size-3!" />
+                  </SidebarMenuAction>
+                </SidebarMenuItem>
               ))}
-            </div>
-          )} */}
+            </SidebarMenu>
+          </SidebarGroup>
+        </SidebarContent>
 
+        <SidebarFooter className="px-2">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                tooltip="Logout"
+                className="h-7 font-medium"
+                onClick={handleSignout}
+              >
+                <LogOut color="#e84b58" />
+                <span>Logout</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      </Sidebar>
+
+      <main className="relative w-full flex flex-col md:flex-row md:items-start justify-start md:justify-center px-0 md:px-10 py-6 bg-sloth-background h-screen">
+        <div className="w-full flex flex-col items-start gap-4">
           {isError && (
             <Alert>
               <AlertCircleIcon />
@@ -246,7 +260,12 @@ function RouteComponent() {
             </Alert>
           )}
 
-          <div className="w-full flex flex-col items-start gap-1 text-sm">
+          {/* <SidebarTrigger
+            icon={ChevronLeft}
+            className="bt size-6 text-core-muted-foreground hover:text-sloth-foreground hover:bg-sloth-aside-background-hover"
+          /> */}
+
+          <div className="w-full py-16 flex flex-col items-start gap-1 text-sm">
             {data &&
               data.map((todo) => (
                 <TodoComponent
@@ -271,16 +290,6 @@ function RouteComponent() {
                 <span>No todos</span>
               </div>
             )}
-
-            {/* <motion.div className={cn(data && data.length > 0 ? 'mt-4' : '')}>
-              <Button
-                variant="linkAnimated"
-                onClick={handleCreateNewTodo}
-                className="font-semibold opacity-10"
-              >
-                Add new todo
-              </Button>
-            </motion.div> */}
           </div>
         </div>
 
@@ -304,7 +313,7 @@ function RouteComponent() {
               },
             },
           }}
-          className="fixed bottom-10 px-2 py-1 rounded-lg flex items-center justify-center gap-0 bg-[#343338]"
+          className="fixed left-1/2 -translate-x-1/2 bottom- md:bottom-10 px-2 py-1 rounded-lg flex items-center justify-center gap-0 bg-[#343338]"
           data-ignore-click-outside
         >
           <Button
@@ -315,10 +324,45 @@ function RouteComponent() {
             <Trash2 size={16} />
           </Button>
           <Button variant="none" className="rounded-lg">
-            <Ellipsis size={16} className="" />
+            <Ellipsis size={16} />
           </Button>
         </motion.div>
-      </div>
-    </div>
+
+        {/* Add New Todo Floating Button */}
+        <motion.div
+          initial="hidden"
+          animate={isEditingMode ? 'hidden' : 'visible'}
+          variants={{
+            hidden: {
+              y: 20,
+              opacity: 0,
+              scale: 0.9,
+              pointerEvents: 'none' as const,
+            },
+            visible: {
+              y: 0,
+              opacity: 1,
+              scale: 1,
+              pointerEvents: 'auto' as const,
+              transition: {
+                type: 'spring',
+                stiffness: 300,
+                damping: 25,
+              },
+            },
+          }}
+          className="fixed bottom-10 right-10 z-50"
+        >
+          <Button
+            size="none"
+            className="shadow-lg rounded-full p-2 flex items-center justify-center bg-[#18AEF8] hover:bg-[#17a0e0] text-white"
+            onClick={handleCreateNewTodo}
+            data-ignore-click-outside
+          >
+            <Plus className="size-6" />
+          </Button>
+        </motion.div>
+      </main>
+    </SidebarProvider>
   )
 }

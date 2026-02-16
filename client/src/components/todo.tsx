@@ -22,6 +22,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
@@ -156,6 +161,23 @@ function formatDueAt(dateStr: string) {
   }
 }
 
+const TAG_COLORS = [
+  '#18AEF8',
+  '#7EBC89',
+  '#29335C',
+  '#D8B4A0',
+  '#D77A61',
+  '#FFD400',
+  '#ED7B84',
+  '#FA1855',
+  '#39A99D',
+  '#A491D3',
+]
+
+const randomTagColor = () => {
+  return TAG_COLORS[Math.floor(Math.random() * TAG_COLORS.length)]
+}
+
 export const TodoComponent = React.memo(
   React.forwardRef<HTMLDivElement, TodoComponentProps>((props, ref) => {
     const {
@@ -179,6 +201,10 @@ export const TodoComponent = React.memo(
     const [isCalendarOpen, setIsCalendarOpen] = useState(false)
     const [isDueCalendarOpen, setIsDueCalendarOpen] = useState(false)
     const [tagSearch, setTagSearch] = useState('')
+    const [isColorPanelOpen, setIsColorPanelOpen] = useState(false)
+    const [selectedTagColor, setSelectedTagColor] = useState<string | null>(
+      randomTagColor(),
+    )
     const tagMenuCloseTimeRef = useRef(0)
     const calendarCloseTimeRef = useRef(0)
     const dueCalendarCloseTimeRef = useRef(0)
@@ -201,37 +227,25 @@ export const TodoComponent = React.memo(
       (tag) => tag.name.toLowerCase() === tagSearch.trim().toLowerCase(),
     )
 
-    const randomTagColor = () => {
-      const colors = [
-        '#EF4444',
-        '#F97316',
-        '#F59E0B',
-        '#EAB308',
-        '#84CC16',
-        '#22C55E',
-        '#14B8A6',
-        '#06B6D4',
-        '#0EA5E9',
-        '#3B82F6',
-        '#6366F1',
-        '#8B5CF6',
-        '#A855F7',
-        '#D946EF',
-        '#EC4899',
-      ]
-      return colors[Math.floor(Math.random() * colors.length)]
-    }
+    // const randomTagColor = () => {
+    //   return TAG_COLORS[Math.floor(Math.random() * TAG_COLORS.length)]
+    // }
+
+    // const handleRandomTagColorOnOpenTag = () => {
+    //   if (isTagMenuOpen) setSelectedTagColor(randomTagColor())
+    // }
 
     const handleCreateTag = async () => {
       const name = tagSearch.trim()
       if (!name || hasExactMatch) return
-      const color = randomTagColor()
+      const color = selectedTagColor ?? randomTagColor()
       const result = await createTagMutation.mutateAsync({ name, color })
       await addTagToTodoMutation.mutateAsync({
         todoId: id,
         tagId: result.data.id,
       })
       setTagSearch('')
+      setSelectedTagColor(randomTagColor())
     }
 
     const handleToggleTag = async (tagId: string) => {
@@ -244,7 +258,8 @@ export const TodoComponent = React.memo(
     }
 
     const internalRef = useRef<HTMLDivElement>(null)
-    const inputRef = useRef<HTMLInputElement>(null)
+    // const inputRef = useRef<HTMLInputElement>(null)
+    const inputRef = useRef<HTMLTextAreaElement>(null)
     const prevIsEditingRef = useRef(false)
 
     // Combine the forwarded ref with the internal ref
@@ -320,6 +335,7 @@ export const TodoComponent = React.memo(
     }
 
     const handleSelectDueDate = async (date: Date | null) => {
+      console.log(date)
       await updateTodoMutation.mutateAsync({
         id,
         dueAt: date ? date.toISOString() : null,
@@ -362,6 +378,8 @@ export const TodoComponent = React.memo(
         // the same click that dismissed the dropdown
         tagMenuCloseTimeRef.current = Date.now()
         setTagSearch('')
+        setIsColorPanelOpen(false)
+        // setSelectedTagColor(null)
       }
     }
 
@@ -387,14 +405,24 @@ export const TodoComponent = React.memo(
       }
     }
 
-    // Focus title input only when entering edit mode
+    const autoResizeTextarea = useCallback(() => {
+      const el = inputRef.current
+      if (!el) return
+      el.style.height = 'auto'
+      el.style.height = `${el.scrollHeight}px`
+    }, [])
+
+    // Focus title input only when entering edit mode (skip on mobile to avoid keyboard popup)
     useEffect(() => {
       if (isEditing && !prevIsEditingRef.current && inputRef.current) {
-        inputRef.current.focus()
-        // inputRef.current.select() // ← Select all text for easy editing
+        const isMobile = window.matchMedia('(max-width: 767px)').matches
+        if (!isMobile) {
+          inputRef.current.focus()
+        }
+        autoResizeTextarea()
       }
       prevIsEditingRef.current = isEditing
-    }, [isEditing])
+    }, [isEditing, autoResizeTextarea])
 
     // Handle click outside to save
     useEffect(() => {
@@ -457,46 +485,69 @@ export const TodoComponent = React.memo(
           onChange={handleFormEditing}
           onKeyDown={handleKeyDown}
         >
+          {/* title-description */}
           <div className="w-full flex gap-2">
             <Checkbox
               data-checkbox
               checked={completed}
               onCheckedChange={handleToggleComplete}
-              className="size-3 mt-1 rounded-[3px] border-core-background/30 data-[state=checked]:border-0 data-[state=checked]:bg-[#18AEF8] data-[state=checked]:text-core-foreground"
+              className="size-3.5 mt-1 md:mt-1 rounded-[3px] border-core-background/30 data-[state=checked]:border-0 data-[state=checked]:bg-[#18AEF8] data-[state=checked]:text-core-foreground"
             />
             <div className="w-full flex flex-col justify-start items-start">
-              <div onClick={handleInitEditing} className="relative w-full">
+              <div
+                onClick={handleInitEditing}
+                className="relative w-full text-base md:text-sm"
+              >
                 {isEditing ? (
-                  <input
+                  // <input
+                  //   ref={inputRef}
+                  //   id={`title-${id}`}
+                  //   name="title"
+                  //   type="text"
+                  //   defaultValue={editedTitle}
+                  //   // onChange={handleEditing}
+                  //   // onKeyDown={handleKeyDown}
+                  //   disabled={updateTodoMutation.isPending}
+                  //   className="w-[95%] md:w-[80%] border-0 bt ring-0! outline-none! shadow-none focus-visible:border-0! focus-visible:ring-0 focus-visible:outline-none flex-wrap"
+                  // />
+
+                  <textarea
                     ref={inputRef}
                     id={`title-${id}`}
                     name="title"
-                    type="text"
                     defaultValue={editedTitle}
-                    // onChange={handleEditing}
-                    // onKeyDown={handleKeyDown}
                     disabled={updateTodoMutation.isPending}
-                    className="w-[80%] border-0! ring-0! outline-none! shadow-none focus-visible:border-0! focus-visible:ring-0 focus-visible:outline-none"
+                    onInput={autoResizeTextarea}
+                    // onKeyDown={(e) => {
+                    //   if (e.key === 'Enter') e.preventDefault()
+                    // }}
+                    className="w-[95%] md:w-[80%] border-0! ring-0! outline-none! shadow-none focus-visible:border-0! focus-visible:ring-0 focus-visible:outline-none resize-none overflow-hidden"
+                    rows={1}
                   />
                 ) : (
-                  <div className="flex justify-start items-center gap-3">
-                    <span className="w-fit truncate">{editedTitle}</span>
+                  <div className="relative w-full flex justify-start items-center gap-3 cursor-pointer">
+                    <span className="w-[80vw] md:w-fit min-w-0 truncate">
+                      {editedTitle}
+                    </span>
                     {todoTags.length > 0 && (
-                      <div className="flex justify-start items-center text-sloth-foreground/70 text-[0.75rem] gap-1">
-                        {todoTags.map((tag) => (
-                          <span
-                            key={tag.id}
-                            className="border px-2 rounded-full lowercase"
-                            style={{
-                              borderColor: tag.color
-                                ? `${tag.color}50`
-                                : '#80808050',
-                            }}
-                          >
-                            {tag.name}
-                          </span>
-                        ))}
-                      </div>
+                      <>
+                        <Tag className="md:hidden size-3 text-sloth-foreground/70" />
+                        <div className="hidden md:flex justify-start items-center text-sloth-foreground/70 text-[0.75rem] gap-1">
+                          {todoTags.map((tag) => (
+                            <span
+                              key={tag.id}
+                              className="border px-2 rounded-full lowercase"
+                              style={{
+                                borderColor: tag.color
+                                  ? `${tag.color}50`
+                                  : '#80808050',
+                              }}
+                            >
+                              {tag.name}
+                            </span>
+                          ))}
+                        </div>
+                      </>
                     )}
                   </div>
                 )}
@@ -541,6 +592,7 @@ export const TodoComponent = React.memo(
               }}
               className="w-full"
             >
+              {/* tag */}
               {todoTags.length > 0 && (
                 <div className="px-2 flex gap-2 text-[0.75rem] flex-wrap">
                   {todoTags.map((tag) => (
@@ -570,7 +622,9 @@ export const TodoComponent = React.memo(
                   ))}
                 </div>
               )}
+
               <div className="mt-2 flex justify-between items-end">
+                {/* startAt-dueAt */}
                 <div className="flex flex-col items-start">
                   {startAt &&
                     (() => {
@@ -644,6 +698,7 @@ export const TodoComponent = React.memo(
                     })()}
                 </div>
 
+                {/* calendar-tag-calendar */}
                 <div className="flex items-center gap-0.5">
                   {!startAt && (
                     <CalendarDropdown
@@ -668,44 +723,108 @@ export const TodoComponent = React.memo(
                           'group p-1 hover:bg-[#4c4c50] rounded-md [&_svg]:pointer-events-auto outline-none border-0 ring-0',
                           isTagMenuOpen && 'bg-sloth-background-hover-2',
                         )}
+                        // onClick={handleRandomTagColorOnOpenTag}
                       >
                         <Tag size={12} />
                       </Button>
-                      {/* <Input
-                      data-ignore-click-outside
-                      className="bt my-0.5 w-fit h-6 rounded-md ring-0 focus-visible:ring-0 border-0 focus:bg-sloth-aside-background-hover"
-                      onKeyDown={(e) => e.stopPropagation()}
-                    /> */}
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                       align="end"
-                      className="w-48 bg-sloth-aside-background border-0 shadow-none rounded-lg text-core-background"
+                      className="relative w-48 bg-sloth-aside-background border-0 shadow-none rounded-lg text-core-background overflow-visible"
                     >
-                      {/* <Input
-                    data-ignore-click-outside
-                    className="my-0.5 h-6 rounded-md ring-0 focus-visible:ring-0 border-0 focus:bg-sloth-aside-background-hover"
-                    onKeyDown={(e) => e.stopPropagation()}
-                    placeholder="Add new tag"
-                  /> */}
-                      <InputWithIcon
-                        data-ignore-click-outside
-                        id="tag-input"
-                        name="new-tag"
-                        type="text"
-                        autoComplete="off"
-                        placeholder="Search or add tag"
-                        startIcon={Plus}
-                        value={tagSearch}
-                        onChange={(e) => setTagSearch(e.target.value)}
-                        className="my-0.5 h-6 rounded-md ring-0 focus-visible:ring-0 border-0 focus:bg-sloth-aside-background-hover"
-                        onKeyDown={(e) => {
-                          e.stopPropagation()
-                          if (e.key === 'Enter') {
+                      <AnimatePresence>
+                        {isColorPanelOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ duration: 0.15, ease: 'easeOut' }}
+                            className="absolute right-full top-0 mr-2 w-[120px] bg-sloth-aside-background rounded-lg p-2 pt-0 shadow-lg z-50 origin-top-right"
+                          >
+                            <span className="text-muted-foreground text-xs">
+                              Tag color
+                            </span>
+                            <div className="grid grid-cols-5 gap-2 mt-1">
+                              {TAG_COLORS.map((color) => (
+                                <button
+                                  key={color}
+                                  type="button"
+                                  className={cn(
+                                    'size-4 rounded cursor-pointer transition-transform hover:scale-110 focus:outline-none',
+                                    selectedTagColor === color &&
+                                      'ring-1 ring-sloth-foreground/50 ring-offset-1 ring-offset-sloth-aside-background',
+                                  )}
+                                  style={{ backgroundColor: color }}
+                                  onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    setSelectedTagColor(color)
+                                    setIsColorPanelOpen(false)
+                                  }}
+                                />
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                      <div className="relative flex items-center">
+                        <Button
+                          size="icon-xs"
+                          type="button"
+                          className="z-10 absolute top-0.75 lef-0 bg-sloth-aside-background/0 hover:bg-sloth-aside-background/0"
+                          onClick={(e) => {
                             e.preventDefault()
-                            handleCreateTag()
-                          }
-                        }}
-                      />
+                            e.stopPropagation()
+                            setIsColorPanelOpen((prev) => !prev)
+                          }}
+                        >
+                          <span
+                            className="size-4 rounded"
+                            style={{
+                              backgroundColor: selectedTagColor ?? '#000000',
+                            }}
+                          />
+                        </Button>
+
+                        {/* <DropdownMenuSub>
+                          <DropdownMenuSubTrigger className="my-0.5 w-fit h-6 focus:bg-sloth-aside-background-hover data-[state=open]:bg-sloth-aside-background-hover data-[state=open]:text-sloth-foreground">
+                            <span className="size-3 bg-black rounded" />
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuPortal>
+                            <DropdownMenuSubContent className="mr-2 bg-sloth-aside-background text-sloth-foreground border-0">
+                              {['Calendly', 'Slack', 'Webhook'].map((text) => (
+                                <DropdownMenuItem
+                                  key={text}
+                                  className="my-0.5 h-6 focus:bg-sloth-aside-background-hover focus:text-sloth-foreground"
+                                >
+                                  {text}
+                                </DropdownMenuItem>
+                              ))}
+                            </DropdownMenuSubContent>
+                          </DropdownMenuPortal>
+                        </DropdownMenuSub> */}
+
+                        <InputWithIcon
+                          data-ignore-click-outside
+                          id="tag-input"
+                          name="new-tag"
+                          type="text"
+                          autoComplete="off"
+                          placeholder="Search or add tag"
+                          // startIcon={Plus}
+                          value={tagSearch}
+                          onChange={(e) => setTagSearch(e.target.value)}
+                          className="my-0.5 pl-7 h-6.5 rounded-md ring-0 focus-visible:ring-0 border-0 focus:bg-sloth-aside-background-hover"
+                          onKeyDown={(e) => {
+                            e.stopPropagation()
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              handleCreateTag()
+                            }
+                          }}
+                        />
+                      </div>
+
                       {filteredTags.length > 0
                         ? filteredTags.map((tag) => {
                             const isTagAdded = todoTags.some(

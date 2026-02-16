@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect } from 'react'
-import { useNavStore } from '@/lib/store'
+// import { useEffect } from 'react'
+// import { useNavStore } from '@/lib/store'
 import { Feature1, Feature2, SlothLogo } from '@/assets'
 
 export const Route = createFileRoute('/')({
@@ -8,22 +8,16 @@ export const Route = createFileRoute('/')({
 })
 
 function App() {
-  const toggleDisplay = useNavStore((state) => state.toggleDisplay)
-  const showDisplay = useNavStore((state) => state.showDisplay)
+  // const toggleDisplay = useNavStore((state) => state.toggleDisplay)
+  // const showDisplay = useNavStore((state) => state.showDisplay)
 
-  useEffect(() => {
-    showDisplay()
-  }, [showDisplay])
   return (
-    <>
-      <div className="relative z-10 flex justify-center items-center text-center h-[calc(100dvh-80px)] px-4 pb-20 bg-sloth-background text-sloth-foreground">
+    <div className="bg-sloth-background text-sloth-foreground">
+      <div className="relative z-10 flex justify-center items-center text-center h-[calc(100dvh-80px)] px-4 pb-20">
         <div className="flex flex-col items-center gap-10">
           <img src={SlothLogo} className="w-30 rounded-2xl" />
           <div className="flex flex-col items-center gap-4">
-            <h1
-              className="text-4xl font-recoleta font-bold"
-              onClick={toggleDisplay}
-            >
+            <h1 className="text-4xl font-recoleta font-bold">
               Meet <span className="px-2">Sloth,</span> Productive without
               pressure
             </h1>
@@ -67,6 +61,6 @@ function App() {
           </div>
         </div>
       </section>
-    </>
+    </div>
   )
 }

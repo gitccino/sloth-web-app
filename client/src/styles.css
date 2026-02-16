@@ -69,13 +69,20 @@
   font-style: normal;
 }
 
+element {
+  /* replace with your selector */
+  font-family: 'Sama Gujarati Medium';
+  font-weight: normal;
+  font-style: normal;
+}
+
 body {
   @apply m-0;
   /* font-family:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
     'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; */
   font-family: 'Averta', 'Geist', sans-serif;
-  /* font-family: 'Cascadia Code', monospace; */
+  /* font-family: 'Sama Gujarati Medium', 'Averta'; */
   font-size: 16px;
   font-weight: 400;
   letter-spacing: -0.2px;
@@ -113,14 +120,14 @@ code {
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: var(--sloth-aside-background);
+  --sidebar-foreground: var(--sloth-foreground);
+  --sidebar-primary: var(--sloth-foreground);
+  --sidebar-primary-foreground: var(--sloth-aside-background);
+  --sidebar-accent: var(--sloth-aside-background-hover);
+  --sidebar-accent-foreground: var(--sloth-foreground);
+  --sidebar-border: transparent;
+  --sidebar-ring: transparent;
   --success: oklch(0.8439 0.0905 132.91);
 
   --base-100: oklch(0.2882 0.0221 277.51);
@@ -143,6 +150,7 @@ code {
   --sloth-background: #262528;
   --sloth-background-hover: #343338;
   --sloth-background-hover-2: #4c4c50;
+  --sloth-aside-dark: #0a0a0b;
   --sloth-aside-background: #1e1d21;
   --sloth-aside-background-hover: #3b3c3f50;
   --sloth-foreground: #f4f5e0;
@@ -229,6 +237,7 @@ code {
   --color-sloth-background: var(--sloth-background);
   --color-sloth-background-hover: var(--sloth-background-hover);
   --color-sloth-background-hover-2: var(--sloth-background-hover-2);
+  --color-sloth-aside-dark: var(--sloth-aside-dark);
   --color-sloth-aside-background: var(--sloth-aside-background);
   --color-sloth-aside-background-hover: var(--sloth-aside-background-hover);
   --color-sloth-foreground: var(--sloth-foreground);
@@ -236,8 +245,8 @@ code {
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
+  --background: #262528;
+  --foreground: #f4f5e0;
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
@@ -259,14 +268,14 @@ code {
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar: var(--sloth-aside-background);
+  --sidebar-foreground: var(--sloth-foreground);
+  --sidebar-primary: var(--sloth-foreground);
+  --sidebar-primary-foreground: var(--sloth-aside-background);
+  --sidebar-accent: var(--sloth-aside-background-hover);
+  --sidebar-accent-foreground: var(--sloth-foreground);
+  --sidebar-border: transparent;
+  --sidebar-ring: transparent;
 
   --active: oklch(0.7858 0.0645 167.59);
 }
@@ -276,7 +285,7 @@ code {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-sloth-background text-sloth-foreground;
+    @apply bg-sloth-background text-sloth-foreground overflow-x-hidden;
   }
 }
 
@@ -349,5 +358,29 @@ code {
     pointer-events: none;
     z-index: 20;
     mix-blend-mode: overlay; /* Blend noise with underlying content */
+  }
+}
+
+/*---break---*/
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Prevent mobile browser zoom on input focus (iOS requires ≥16px to avoid auto-zoom) */
+  @media screen and (max-width: 768px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+    /* Tag search input: 14px on mobile (zoom disabled via viewport in index.html) */
+    #tag-input {
+      font-size: 14px !important;
+    }
   }
 }
