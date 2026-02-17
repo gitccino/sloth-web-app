@@ -347,7 +347,7 @@ function RouteComponent() {
               },
             },
           }}
-          className="fixed left-1/2 -translate-x-1/2 bottom- md:bottom-10 px-2 py-1 rounded-lg flex items-center justify-center gap-0 bg-[#343338]"
+          className="fixed left-1/2 -translate-x-1/2 bottom-6 md:bottom-10 px-2 py-1 rounded-lg flex items-center justify-center gap-0 bg-[#343338]"
           data-ignore-click-outside
         >
           <Button

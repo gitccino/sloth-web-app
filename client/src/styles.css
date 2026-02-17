@@ -379,11 +379,12 @@ code {
 
   /* Prevent mobile browser zoom on input focus (iOS requires ≥16px to avoid auto-zoom) */
   @media screen and (max-width: 768px) {
-    input,
+    /* input,
     select,
     textarea {
       font-size: 16px !important;
-    }
+    } */
+
     /* Tag search input: 14px on mobile (zoom disabled via viewport in index.html) */
     #tag-input {
       font-size: 14px !important;

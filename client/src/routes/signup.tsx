@@ -217,20 +217,36 @@ function RouteComponent() {
   }
 
   return (
-    <div className="relative flex items-center justify-center min-h-[calc(100vh-80px)] px-[5%] bg-sloth-background text-sloth-foreground">
-      <div className="min-h-[600px] w-120 p-10 text-core-background flex items-center">
-        <img src={RegisterArt} />
+    <div className="relative flex flex-col md:flex-row items-center justify-start md:justify-center min-h-[calc(100vh-80px)] px-[5%] bg-sloth-background text-sloth-foreground">
+      <Button
+        variant="ghostNav"
+        size="sm"
+        className="self-start md:hidden"
+        asChild
+      >
+        <Link to="/">
+          <ArrowLeft size={12} />
+          <h1>Back to Home</h1>
+        </Link>
+      </Button>
+      <div className="md:min-h-[600px] w-full md:w-120 text-core-background flex justify-center items-center">
+        <img src={RegisterArt} className="w-[50%] md:w-full" />
       </div>
-      <div className="min-h-[calc(100vh-120px)] w-100 flex flex-col justify-center items-start pb-20">
-        <Button variant="ghostNav" size="sm" className="ml-4" asChild>
+      <div className="md:min-h-[calc(100vh-120px)] w-100 flex flex-col justify-center items-start pb-20">
+        <Button
+          variant="ghostNav"
+          size="sm"
+          className="ml-4 hidden md:flex"
+          asChild
+        >
           <Link to="/">
             <ArrowLeft size={12} />
             <h1>Back to Home</h1>
           </Link>
         </Button>
-        <Card className="w-full max-w-sm shadow-none bg-sloth-background text-sloth-foreground">
+        <Card className="w-full h-fit shadow-none bg-sloth-background text-sloth-foreground">
           <CardHeader className="w-full flex flex-col items-start gap-1 px-8">
-            <CardTitle className="font-recoleta font-bold text-3xl">
+            <CardTitle className="font-recoleta font-bold text-2xl md:text-3xl">
               Create an account
             </CardTitle>
             <CardDescription className="pl-0.5 font-normal">
@@ -238,23 +254,6 @@ function RouteComponent() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* <div className="bt mb-8 p-1 rounded-full flex gap-1">
-            <Button
-              variant="ghost"
-              className={`h-8 flex-1 font-bold text-muted-foreground rounded-full text-sm flex items-center justify-center`}
-              asChild
-            >
-              <Link to="/signin">Sign in</Link>
-            </Button>
-
-            <Button
-              className={`h-8 flex-1 font-bold text-neutral rounded-full text-sm flex items-center justify-center`}
-              asChild
-            >
-              <Link to="/signup">Sign up</Link>
-            </Button>
-          </div> */}
-
             <form onChange={handleFormChange} onSubmit={handleSubmit}>
               <div className="flex flex-col gap-2 mb-4">
                 <div className="grid gap-1">
@@ -357,7 +356,7 @@ function RouteComponent() {
               {authError && (
                 <Alert
                   variant="destructive"
-                  className="border-0 bg-core-background"
+                  className="border-0 bg-sloth-background"
                 >
                   <AlertCircleIcon strokeWidth={2.5} />
                   <AlertTitle className="font-semibold">{authError}</AlertTitle>

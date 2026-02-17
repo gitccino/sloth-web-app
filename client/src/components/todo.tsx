@@ -219,6 +219,7 @@ export const TodoComponent = React.memo(
     const isCalendarOpenRef = useRef(false)
     const isDueCalendarOpenRef = useRef(false)
 
+    const isMobile = useIsMobile()
     const updateTodoMutation = useUpdateTodo()
     const addTagToTodoMutation = useAddTagToTodo()
     const removeTagFromTodoMutation = useRemoveTagFromTodo()
@@ -422,14 +423,13 @@ export const TodoComponent = React.memo(
     // Focus title input only when entering edit mode (skip on mobile to avoid keyboard popup)
     useEffect(() => {
       if (isEditing && !prevIsEditingRef.current && inputRef.current) {
-        const isMobile = window.matchMedia('(max-width: 767px)').matches
         if (!isMobile) {
           inputRef.current.focus()
         }
         autoResizeTextarea()
       }
       prevIsEditingRef.current = isEditing
-    }, [isEditing, autoResizeTextarea])
+    }, [isEditing, isMobile, autoResizeTextarea])
 
     // Handle click outside to save
     useEffect(() => {
@@ -498,13 +498,10 @@ export const TodoComponent = React.memo(
               data-checkbox
               checked={completed}
               onCheckedChange={handleToggleComplete}
-              className="size-3.5 mt-1 md:mt-1 rounded-[3px] border-core-background/30 data-[state=checked]:border-0 data-[state=checked]:bg-[#18AEF8] data-[state=checked]:text-core-foreground"
+              className="size-4 md:size-3.5 mt-1.5 md:mt-1.5 rounded-[3px] border-core-background/30 data-[state=checked]:border-0 data-[state=checked]:bg-[#18AEF8] data-[state=checked]:text-core-foreground"
             />
             <div className="w-full flex flex-col justify-start items-start">
-              <div
-                onClick={handleInitEditing}
-                className="relative w-full text-base md:text-sm"
-              >
+              <div onClick={handleInitEditing} className="relative w-full">
                 {isEditing ? (
                   // <input
                   //   ref={inputRef}
@@ -528,12 +525,12 @@ export const TodoComponent = React.memo(
                     // onKeyDown={(e) => {
                     //   if (e.key === 'Enter') e.preventDefault()
                     // }}
-                    className="w-[95%] md:w-[80%] border-0! ring-0! outline-none! shadow-none focus-visible:border-0! focus-visible:ring-0 focus-visible:outline-none resize-none overflow-hidden"
+                    className="w-[95%] md:w-[80%] text-lg md:text-base focus-visible:border-0 focus-visible:ring-0 focus-visible:outline-none resize-none overflow-hidden"
                     rows={1}
                   />
                 ) : (
                   <div className="relative w-full flex justify-start items-center gap-3 cursor-pointer">
-                    <span className="w-[80vw] md:w-fit min-w-0 truncate">
+                    <span className="w-[80vw] md:w-fit min-w-0 truncate text-lg md:text-base">
                       {editedTitle}
                     </span>
                     {todoTags.length > 0 && (

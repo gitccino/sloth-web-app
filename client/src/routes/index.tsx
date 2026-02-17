@@ -4,6 +4,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { AiMagicIcon, NoteIcon, StarIcon } from '@hugeicons/core-free-icons'
 import { Check, Pause, Plus } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
+import { useNavStore } from '@/lib/store'
 import { Feature1, Feature2, Humation, SlothLogo } from '@/assets'
 import { Checkbox } from '@/components/ui/checkbox'
 
@@ -235,8 +236,11 @@ function ThinkingPartnerDemo() {
 }
 
 function App() {
-  // const toggleDisplay = useNavStore((state) => state.toggleDisplay)
-  // const showDisplay = useNavStore((state) => state.showDisplay)
+  const showDisplay = useNavStore((state) => state.showDisplay)
+
+  useEffect(() => {
+    showDisplay()
+  }, [showDisplay])
 
   return (
     <div className="bg-sloth-background text-sloth-foreground">
