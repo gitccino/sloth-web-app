@@ -12,7 +12,7 @@ export const auth = betterAuth({
     emailAndPassword: {
       enabled: true,
     },
-    trustedOrigins: [process.env.CLIENT_URL!],
+    trustedOrigins: [process.env.CLIENT_URL!, process.env.CLIENT_REMOTE_URL!],
     plugins: [
         openAPI(),
     ]
