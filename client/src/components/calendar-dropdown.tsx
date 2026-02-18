@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { CalendarDays, ChevronLeft, ChevronRight, Star } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Delete02Icon } from '@hugeicons/core-free-icons'
 import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -27,13 +29,19 @@ interface CalendarDropdownProps {
   icon?: LucideIcon
 }
 
-export function CalendarDropdown({
+interface CalendarDropdownContentProps {
+  selectedDate?: Date | null
+  onSelectDate?: (date: Date | null) => void
+  onClose?: () => void
+  className?: string
+}
+
+export function CalendarDropdownContent({
   selectedDate,
   onSelectDate,
-  open,
-  onOpenChange,
-  icon: Icon = CalendarDays,
-}: CalendarDropdownProps) {
+  onClose,
+  className,
+}: CalendarDropdownContentProps) {
   const today = new Date()
   const [viewYear, setViewYear] = useState(today.getFullYear())
   const [viewMonth, setViewMonth] = useState(today.getMonth())
@@ -98,19 +106,18 @@ export function CalendarDropdown({
   const handleSelectDay = (day: number) => {
     const date = new Date(viewYear, viewMonth, day)
     onSelectDate?.(date)
-    onOpenChange?.(false)
+    onClose?.()
+  }
+
+  const handleClearSelectDay = () => {
+    onSelectDate?.(null)
+    onClose?.()
   }
 
   const handleSelectToday = () => {
     onSelectDate?.(today)
-    onOpenChange?.(false)
+    onClose?.()
   }
-
-  // const handleSelectSomeday = () => {
-  //   // Someday = no specific date, just a marker
-  //   onSelectDate?.(null)
-  //   onOpenChange?.(false)
-  // }
 
   // Build calendar grid cells
   const cells: Array<{
@@ -146,6 +153,161 @@ export function CalendarDropdown({
   })
 
   return (
+    <div
+      className={cn(
+        'w-56 p-0 bg-sloth-aside-background rounded-lg text-core-background',
+        className,
+      )}
+    >
+      {/* Quick options */}
+      <div className="flex flex-col px-1 pt-1">
+        <button
+          type="button"
+          className="flex items-center gap-2 px-2.5 py-1 rounded-md text-base md:text-sm font-semibold md:font-medium hover:bg-sloth-aside-background-hover transition-colors text-left"
+          onClick={handleSelectToday}
+        >
+          <Star color="#FFD400" fill="#FFD400" className="size-5 md:size-3.5" />
+          <span>Today</span>
+        </button>
+        {/* <button
+          type="button"
+          className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium hover:bg-[#4c4c50] transition-colors text-left"
+        >
+          <Moon size={14} color="#A0A0FF" />
+          <span>This Evening</span>
+        </button> */}
+      </div>
+
+      {/* Calendar */}
+      <div className="px-2 pt-2 pb-1">
+        {/* Month header with nav */}
+        <div className="flex items-center justify-between mb-2 px-1">
+          <span className="pl-1 md:pl-0.5 text-sm md:text-xs md:font-semibold text-core-background/70">
+            {monthName} {viewYear}
+          </span>
+          <div className="flex items-center gap-0.5">
+            <button
+              type="button"
+              onClick={handlePrevMonth}
+              disabled={isCurrentOrPastMonth}
+              className={cn(
+                'p-1 md:p-0.5 rounded transition-colors',
+                isCurrentOrPastMonth
+                  ? 'opacity-30 cursor-default'
+                  : 'hover:bg-sloth-aside-background-hover',
+              )}
+            >
+              <ChevronLeft
+                size={12}
+                className="size-4 md:size-3 text-core-background/50"
+              />
+            </button>
+            <button
+              type="button"
+              onClick={handleNextMonth}
+              className="p-1 md:p-0.5 rounded hover:bg-sloth-aside-background-hover transition-colors"
+            >
+              <ChevronRight
+                size={12}
+                className="size-4 md:size-3 text-core-background/50"
+              />
+            </button>
+          </div>
+        </div>
+
+        {/* Day labels */}
+        <div className="grid grid-cols-7 mb-1">
+          {DAY_LABELS.map((label) => (
+            <div
+              key={label}
+              className="text-xs md:text-[0.65rem] font-medium text-core-background/40 text-center py-0"
+            >
+              {label}
+            </div>
+          ))}
+        </div>
+
+        {/* Day grid */}
+        <div className="grid grid-cols-7">
+          {cells.map((cell) => {
+            const past = cell.isCurrentMonth && isPast(cell.day)
+            const disabled = !cell.isCurrentMonth || past
+            return (
+              <button
+                data-ignore-click-outside
+                key={cell.key}
+                type="button"
+                disabled={disabled}
+                onClick={() =>
+                  cell.isCurrentMonth && !past && handleSelectDay(cell.day)
+                }
+                className={cn(
+                  'py-1 md:text-xs w-full rounded-md md:rounded-sm transition-colors flex items-center justify-center',
+                  cell.isCurrentMonth && !past
+                    ? 'text-sloth-foreground hover:bg-sloth-aside-background-hover cursor-pointer'
+                    : 'text-sloth-foreground/10 cursor-default',
+                  isToday(cell.day) && cell.isCurrentMonth && 'text-[#FFD400]',
+                  isSelected(cell.day) &&
+                    cell.isCurrentMonth &&
+                    'bg-sloth-aside-background-hover',
+                )}
+              >
+                {isToday(cell.day) && cell.isCurrentMonth ? (
+                  <Star size={12} fill="#FFD400" className="size-4 md:size-3" />
+                ) : (
+                  cell.day
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Bottom options */}
+      {selectedDate && (
+        <div className="flex md:hidden flex-col px-1 pb-1 pt-2 border-t border-white/5">
+          <Button
+            type="button"
+            className="flex justify-center items-center gap-1 px-2.5 py-1.5 rounded-md text-sm font-semibold bg-destructive/10 text-sloth-destructive transition-colors text-left mt-1"
+            onClick={handleClearSelectDay}
+          >
+            {/* <Archive size={14} color="#C4A24E" /> */}
+            <HugeiconsIcon
+              icon={Delete02Icon}
+              strokeWidth={2}
+              className="size-4"
+            />
+            <span>Clear</span>
+          </Button>
+          {/* <button
+          type="button"
+          className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium hover:bg-[#4c4c50] transition-colors text-left mt-1"
+          onClick={handleSelectSomeday}
+        >
+          <Archive size={14} color="#C4A24E" />
+          <span>Someday</span>
+        </button>
+        <button
+          type="button"
+          className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium hover:bg-[#4c4c50] transition-colors text-left"
+        >
+          <Plus size={14} />
+          <span>Add Reminder</span>
+        </button>  */}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function CalendarDropdown({
+  selectedDate,
+  onSelectDate,
+  open,
+  onOpenChange,
+  icon: Icon = CalendarDays,
+}: CalendarDropdownProps) {
+  return (
     <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
         <Button
@@ -162,126 +324,13 @@ export function CalendarDropdown({
       </PopoverTrigger>
       <PopoverContent
         align="end"
-        className="w-56 p-0 bg-sloth-aside-background border-0 shadow-lg rounded-lg text-core-background"
+        className="w-auto p-0 bg-transparent border-0 shadow-none"
       >
-        {/* Quick options */}
-        <div className="flex flex-col px-1 pt-1">
-          <button
-            type="button"
-            className="flex items-center gap-2 px-2.5 py-1 rounded-md text-sm font-medium hover:bg-sloth-aside-background-hover transition-colors text-left"
-            onClick={handleSelectToday}
-          >
-            <Star size={14} color="#FFD400" fill="#FFD400" />
-            <span>Today</span>
-          </button>
-          {/* <button
-            type="button"
-            className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium hover:bg-[#4c4c50] transition-colors text-left"
-          >
-            <Moon size={14} color="#A0A0FF" />
-            <span>This Evening</span>
-          </button> */}
-        </div>
-
-        {/* Calendar */}
-        <div className="px-2 pt-2 pb-1">
-          {/* Month header with nav */}
-          <div className="flex items-center justify-between mb-2 px-1">
-            <span className="text-xs font-semibold text-core-background/70">
-              {monthName} {viewYear}
-            </span>
-            <div className="flex items-center gap-0.5">
-              <button
-                type="button"
-                onClick={handlePrevMonth}
-                disabled={isCurrentOrPastMonth}
-                className={cn(
-                  'p-0.5 rounded transition-colors',
-                  isCurrentOrPastMonth
-                    ? 'opacity-30 cursor-default'
-                    : 'hover:bg-sloth-aside-background-hover',
-                )}
-              >
-                <ChevronLeft size={12} className="text-core-background/50" />
-              </button>
-              <button
-                type="button"
-                onClick={handleNextMonth}
-                className="p-0.5 rounded hover:bg-sloth-aside-background-hover transition-colors"
-              >
-                <ChevronRight size={12} className="text-core-background/50" />
-              </button>
-            </div>
-          </div>
-
-          {/* Day labels */}
-          <div className="grid grid-cols-7 mb-1">
-            {DAY_LABELS.map((label) => (
-              <div
-                key={label}
-                className="text-[0.65rem] font-medium text-core-background/40 text-center py-0"
-              >
-                {label}
-              </div>
-            ))}
-          </div>
-
-          {/* Day grid */}
-          <div className="grid grid-cols-7">
-            {cells.map((cell) => {
-              const past = cell.isCurrentMonth && isPast(cell.day)
-              const disabled = !cell.isCurrentMonth || past
-              return (
-                <button
-                  data-ignore-click-outside
-                  key={cell.key}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() =>
-                    cell.isCurrentMonth && !past && handleSelectDay(cell.day)
-                  }
-                  className={cn(
-                    'py-1 text-xs w-full rounded transition-colors flex items-center justify-center',
-                    cell.isCurrentMonth && !past
-                      ? 'text-sloth-foreground hover:bg-sloth-aside-background-hover cursor-pointer'
-                      : 'text-sloth-foreground/10 cursor-default',
-                    isToday(cell.day) &&
-                      cell.isCurrentMonth &&
-                      'text-[#FFD400]',
-                    isSelected(cell.day) &&
-                      cell.isCurrentMonth &&
-                      'bg-[#4c4c50] text-core-background',
-                  )}
-                >
-                  {isToday(cell.day) && cell.isCurrentMonth ? (
-                    <Star size={12} fill="#FFD400" />
-                  ) : (
-                    cell.day
-                  )}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Bottom options */}
-        {/* <div className="flex flex-col px-1 pb-1 border-t border-white/5">
-          <button
-            type="button"
-            className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium hover:bg-[#4c4c50] transition-colors text-left mt-1"
-            onClick={handleSelectSomeday}
-          >
-            <Archive size={14} color="#C4A24E" />
-            <span>Someday</span>
-          </button>
-          <button
-            type="button"
-            className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium hover:bg-[#4c4c50] transition-colors text-left"
-          >
-            <Plus size={14} />
-            <span>Add Reminder</span>
-          </button>
-        </div> */}
+        <CalendarDropdownContent
+          selectedDate={selectedDate}
+          onSelectDate={onSelectDate}
+          onClose={() => onOpenChange?.(false)}
+        />
       </PopoverContent>
     </Popover>
   )
