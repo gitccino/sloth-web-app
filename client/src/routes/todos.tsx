@@ -49,6 +49,7 @@ import {
 } from '@/utils/tanstack-query/useMutation.ts'
 
 import { useIsMobile } from '@/hooks/use-mobile.ts'
+import { cn } from '@/lib/utils.ts'
 
 const client = hc<AppType>('/')
 
@@ -271,8 +272,12 @@ function RouteComponent() {
         </SidebarFooter>
       </Sidebar>
 
-      <main className="relative w-full flex flex-col md:flex-row md:items-start justify-start md:justify-center px-0 md:px-10 py-6 bg-sloth-background h-screen">
-        <div className="w-full flex flex-col items-start gap-4">
+      {isEditingMode && isMobile && (
+        <div className="z-30 fixed inset-0 bg-sloth-aside-background/60 w-screen h-screen pointer-events-none" />
+      )}
+
+      <main className="relative w-full flex flex-col md:flex-row md:items-start justify-start md:justify-center px-0 md:px-10 py-6 pb-100 md:pb-6 bg-sloth-background h-fit">
+        <div className="w-full min-w-0 flex flex-col items-start gap-4">
           {isError && (
             <Alert>
               <AlertCircleIcon />
@@ -290,14 +295,14 @@ function RouteComponent() {
             <span className="text-2xl font-bold">Today</span>
           </div> */}
 
-          <div className="w-full py-4 md:py-16 flex flex-col items-start gap-1 text-sm">
+          <div className="w-full min-w-0 py-4 md:py-16 flex flex-col items-start gap-1 text-sm">
             <div className="ml-3 mb-6 flex items-center gap-2">
               <Star color="#FFD400" fill="#FFD400" />
               <span className="text-2xl font-bold">Today</span>
             </div>
 
             {data && (
-              <div className="w-full flex flex-col gap-2">
+              <div className="w-full min-w-0 flex flex-col gap-2">
                 {data.map((todo) => (
                   <TodoComponent
                     key={todo.id}
@@ -313,6 +318,7 @@ function RouteComponent() {
                     dueAt={todo.dueAt}
                     tags={tags}
                     todoTags={todo.tags}
+                    className={cn(editingTodoId === todo.id && 'z-50')}
                   />
                 ))}
               </div>
@@ -347,7 +353,7 @@ function RouteComponent() {
               },
             },
           }}
-          className="fixed left-1/2 -translate-x-1/2 bottom-6 md:bottom-10 px-2 py-1 rounded-full md:rounded-lg border-[0.5px] border-sloth-background-hover-2 flex items-center justify-center gap-0 bg-sloth-background-hover"
+          className="z-50 fixed left-1/2 -translate-x-1/2 bottom-6 md:bottom-10 px-2 py-1 rounded-full md:rounded-lg border-[0.5px] border-sloth-background-hover-2 flex items-center justify-center gap-0 bg-sloth-background-hover"
           data-ignore-click-outside
         >
           <Button
