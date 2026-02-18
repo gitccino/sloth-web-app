@@ -15,20 +15,19 @@ const GLM_MODEL = "glm-4.7-flash"; // Fast & free; use glm-4.7 or glm-5 for deep
 
 // Be concise but thorough. Use markdown formatting. Focus on actionable feedback.`;
 
-const SYSTEM_PROMPT = `You are a code reviewer. Review like a teammate would — concise and direct.
+const SYSTEM_PROMPT = `You are a code reviewer. Output ONLY valid JSON. No other text.
 
-Rules:
-- Flag only P0/P1 issues: critical bugs, security, correctness, major performance regressions.
-- Skip style, typos, minor suggestions unless they cause real problems.
-- Output format: 2–5 bullet points max if issues found, else one-line approval.
-- End with verdict: "✅ LGTM" or "❌ Issues found" followed by the bullets.
-- No preamble, no long explanations. Keep each bullet short (one line).`;
+Flag only P0/P1 issues: critical bugs, security, correctness, major performance regressions.
+Skip style, typos, minor suggestions. Reference line numbers from the diff (the + lines).
+
+Output format (JSON only):
+{"issues":[{"path":"file/path.ts","line":42,"severity":"P1","title":"Short title","body":"Full explanation of the issue and why it matters."}]}
+
+If no issues: {"issues":[]}
+Each issue: path (file from diff), line (line number in new file), severity (P0 or P1), title (one short line), body (2-4 sentences explaining the problem).`;
 
 async function getPrDiff(): Promise<string> {
-  const baseRef = process.env.GITHUB_BASE_REF || "main";
-  const base = `origin/${baseRef}`;
-
-  const proc = Bun.spawn(["git", "diff", `${base}...HEAD`], {
+  const proc = Bun.spawn(["git", "diff", "HEAD~1", "HEAD"], {
     stdout: "pipe",
     stderr: "pipe",
   });
@@ -128,7 +127,16 @@ async function getReviewFromGlm(diff: string): Promise<string> {
   throw new Error(`No review content in Z.AI response. Response structure: ${structure}`);
 }
 
-async function postPrComment(body: string): Promise<void> {
+type ReviewIssue = { path: string; line: number; severity: string; title: string; body: string };
+
+async function getCommitSha(): Promise<string> {
+  const sha = process.env.GITHUB_SHA;
+  if (sha) return sha;
+  const proc = Bun.spawn(["git", "rev-parse", "HEAD"], { stdout: "pipe" });
+  return (await new Response(proc.stdout).text()).trim();
+}
+
+async function postCodexReview(issues: ReviewIssue[]): Promise<void> {
   const token = process.env.GITHUB_TOKEN;
   const repo = process.env.GITHUB_REPOSITORY;
   const prNumber = process.env.GITHUB_EVENT_PATH
@@ -137,61 +145,102 @@ async function postPrComment(body: string): Promise<void> {
     : null;
 
   if (!token || !repo || !prNumber) {
-    console.error("Missing GITHUB_TOKEN, GITHUB_REPOSITORY, or PR number. Skipping comment.");
+    console.error("Missing GITHUB_TOKEN, GITHUB_REPOSITORY, or PR number. Skipping review.");
     return;
   }
 
   const [owner, repoName] = repo.split("/");
-  const commentMarker = "<!-- z-ai-pr-review -->";
+  const commitId = await getCommitSha();
+  const shortSha = commitId.slice(0, 9);
 
-  // List existing comments to find and update our bot comment
-  const listRes = await fetch(
-    `https://api.github.com/repos/${owner}/${repoName}/issues/${prNumber}/comments`,
+  const mainBody = `💡 Codex Review
+
+Here are some automated review suggestions for this pull request.
+
+**Reviewed commit:** \`${shortSha}\``;
+
+  const comments = issues.map((i) => ({
+    path: i.path,
+    line: i.line,
+    side: "RIGHT" as const,
+    body: `**${i.severity}** ${i.title}\n\n${i.body}`,
+  }));
+
+  const body = issues.length > 0 ? mainBody : `${mainBody}\n\nNo critical issues found. ✅`;
+
+  const res = await fetch(
+    `https://api.github.com/repos/${owner}/${repoName}/pulls/${prNumber}/reviews`,
     {
+      method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        commit_id: commitId,
+        body,
+        event: "COMMENT",
+        comments,
+      }),
     }
   );
 
-  const comments = (await listRes.json()) as Array<{ id: number; body?: string; user?: { type?: string } }>;
-  const botComment = comments.find((c) => c.body?.includes(commentMarker));
-
-  const commentBody = `${commentMarker}\n\n## 🤖 Z.AI GLM Code Review\n\n${body}`;
-
-  if (botComment) {
-    await fetch(
-      `https://api.github.com/repos/${owner}/${repoName}/issues/comments/${botComment.id}`,
-      {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/vnd.github+json",
-          "X-GitHub-Api-Version": "2022-11-28",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ body: commentBody }),
-      }
-    );
-    console.log("Updated existing review comment");
-  } else {
-    await fetch(
-      `https://api.github.com/repos/${owner}/${repoName}/issues/${prNumber}/comments`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/vnd.github+json",
-          "X-GitHub-Api-Version": "2022-11-28",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ body: commentBody }),
-      }
-    );
-    console.log("Posted new review comment");
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`GitHub API error ${res.status}: ${err}`);
   }
+  console.log(`Posted review with ${issues.length} line comment(s)`);
+}
+
+async function postCodexReviewWithFallback(rawBody: string): Promise<void> {
+  const token = process.env.GITHUB_TOKEN;
+  const repo = process.env.GITHUB_REPOSITORY;
+  const prNumber = process.env.GITHUB_EVENT_PATH
+    ? (JSON.parse(await Bun.file(process.env.GITHUB_EVENT_PATH).text()) as { pull_request?: { number?: number } })
+        .pull_request?.number
+    : null;
+
+  if (!token || !repo || !prNumber) {
+    console.error("Missing GITHUB_TOKEN, GITHUB_REPOSITORY, or PR number. Skipping.");
+    return;
+  }
+
+  const [owner, repoName] = repo.split("/");
+  const commitId = await getCommitSha();
+  const shortSha = commitId.slice(0, 9);
+
+  const body = `💡 Codex Review
+
+Here are some automated review suggestions for this pull request.
+
+**Reviewed commit:** \`${shortSha}\`
+
+---
+
+${rawBody}`;
+
+  const res = await fetch(
+    `https://api.github.com/repos/${owner}/${repoName}/pulls/${prNumber}/reviews`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        commit_id: commitId,
+        body,
+        event: "COMMENT",
+        comments: [],
+      }),
+    }
+  );
+  if (!res.ok) throw new Error(`GitHub API error ${res.status}: ${await res.text()}`);
+  console.log("Posted review (fallback, no line comments)");
 }
 
 async function main() {
@@ -210,13 +259,29 @@ async function main() {
   }
 
   console.log("Sending to Z.AI GLM for review...");
-  const review = await getReviewFromGlm(diff);
+  const rawReview = await getReviewFromGlm(diff);
 
-  console.log("Review received:\n");
-  console.log(review);
+  const jsonStr = rawReview.match(/\{[\s\S]*\}/)?.[0] ?? rawReview;
+  let issues: ReviewIssue[] = [];
+  let parseFailed = false;
+  try {
+    const parsed = JSON.parse(jsonStr) as { issues?: ReviewIssue[] };
+    issues = Array.isArray(parsed?.issues) ? parsed.issues : [];
+  } catch {
+    console.warn("Could not parse LLM JSON, posting raw review in body");
+    parseFailed = true;
+  }
+
+  if (parseFailed) {
+    await postCodexReviewWithFallback(rawReview);
+    return;
+  }
+
+  console.log(`Found ${issues.length} issue(s)`);
+  issues.forEach((i) => console.log(`  - ${i.severity} ${i.path}:${i.line} ${i.title}`));
 
   console.log("\nPosting review to PR...");
-  await postPrComment(review);
+  await postCodexReview(issues);
 
   console.log("Done.");
 }
