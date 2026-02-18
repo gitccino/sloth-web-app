@@ -1,294 +1,344 @@
-#!/usr/bin/env bun
-/**
- * PR Review Agent using Z.AI GLM model
- * Fetches PR diff, sends to GLM for review, posts comment on the PR.
- */
-
-const Z_AI_API_URL = "https://api.z.ai/api/paas/v4/chat/completions";
-const GLM_MODEL = "glm-4.7-flash"; // Fast & free; use glm-4.7 or glm-5 for deeper analysis
-
-// const SYSTEM_PROMPT = `You are an expert code reviewer. Analyze the pull request diff and provide:
-// 1. **Summary** - Brief overview of changes
-// 2. **Potential Issues** - Bugs, security concerns, edge cases
-// 3. **Suggestions** - Improvements, best practices, refactoring ideas
-// 4. **Positive Notes** - What was done well
-
-// Be concise but thorough. Use markdown formatting. Focus on actionable feedback.`;
-
-const SYSTEM_PROMPT = `You are a code reviewer. Output ONLY valid JSON. No other text.
-
-Flag only P0/P1 issues: critical bugs, security, correctness, major performance regressions.
-Skip style, typos, minor suggestions. Reference line numbers from the diff (the + lines).
-
-Output format (JSON only):
-{"issues":[{"path":"file/path.ts","line":42,"severity":"P1","title":"Short title","body":"Full explanation of the issue and why it matters."}]}
-
-If no issues: {"issues":[]}
-Each issue: path (file from diff), line (line number in new file), severity (P0 or P1), title (one short line), body (2-4 sentences explaining the problem).`;
-
-async function getPrDiff(): Promise<string> {
-  const proc = Bun.spawn(["git", "diff", "HEAD~1", "HEAD"], {
-    stdout: "pipe",
-    stderr: "pipe",
-  });
-
-  const [exitCode, diff, stderr] = await Promise.all([
-    proc.exited,
-    new Response(proc.stdout).text(),
-    new Response(proc.stderr).text(),
-  ]);
-  if (exitCode !== 0) {
-    console.error("git diff stderr:", stderr);
-    throw new Error(`git diff failed with code ${exitCode}`);
-  }
-  if (!diff.trim()) {
-    return "(No file changes in this PR)";
-  }
-  return diff;
+interface Message {
+  role: "user" | "assistant";
+  content: string;
 }
 
-async function getReviewFromGlm(diff: string): Promise<string> {
-  const apiKey = process.env.Z_AI_API_KEY;
-  if (!apiKey) {
-    throw new Error("Z_AI_API_KEY secret is not set. Add it in repo Settings > Secrets and variables > Actions.");
+interface ZAIResponse {
+  id: string;
+  choices: {
+    index: number;
+    message: {
+      role: string;
+      content: string;
+    };
+    finish_reason: string;
+  }[];
+  usage: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
+}
+
+const PR_REVIEWER_SYSTEM_PROMPT =
+`You are an expert code reviewer. Review the PR diff and report **only critical issues**.
+
+Focus exclusively on:
+- 🐛 **Bugs & Logic Errors** — broken or incorrect behavior
+- 🔒 **Security** — vulnerabilities, injection risks, exposed secrets
+- ⚡ **Performance** — severe bottlenecks only
+
+Skip minor style, formatting, or non-blocking suggestions.
+
+Format rules:
+- Use \`###\` section headers
+- Use \`\`\`language\`\`\` for code snippets
+- **Bold** critical issues, *italic* for recommended fixes
+- Be concise — no fluff, no praise, no summaries`;
+
+async function fetchPRReview(
+  prDiff: string,
+  prDescription?: string,
+  apiKey?: string
+): Promise<string> {
+  const key = apiKey || process.env.Z_AI_API_KEY;
+
+  if (!key) {
+    throw new Error(
+      "Z AI API key is required. Set Z_AI_API_KEY env variable or pass apiKey parameter."
+    );
   }
 
-  // throw new Error("Break")
+  const userMessage = prDescription
+    ? `**PR Description:**\n${prDescription}\n\n**Code Diff:**\n\`\`\`diff\n${prDiff}\n\`\`\``
+    : `**Code Diff:**\n\`\`\`diff\n${prDiff}\n\`\`\``;
 
-  const response = await fetch(Z_AI_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: GLM_MODEL,
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        {
-          role: "user",
-          content: `Review this pull request diff:\n\n\`\`\`diff\n${diff.slice(0, 100_000)}\n\`\`\``,
+  const messages: Message[] = [{ role: "user", content: userMessage }];
+
+  const response = await fetch(
+    "https://api.z.ai/api/coding/paas/v4/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify({
+        model: "glm-4.7",
+        messages: [
+          { role: "system", content: PR_REVIEWER_SYSTEM_PROMPT },
+          ...messages,
+        ],
+        thinking: {
+          type: "enabled"
         },
-      ],
-      temperature: 0.3,
-      max_tokens: 4000,
-      stream: false,
-    }),
-  });
+        temperature: 1.0,
+        max_tokens: 8196,
+        stream: false,
+      }),
+    }
+  );
 
   if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Z.AI API error ${response.status}: ${errText}`);
+    const error = await response.text();
+    throw new Error(
+      `Z AI API request failed: ${response.status} ${response.statusText}\n${error}`
+    );
   }
 
-  const data = (await response.json()) as {
-    choices?: Array<{
-      message?: { content?: string | null; reasoning_content?: string | null };
-    }>;
-    error?: { message?: string };
-    code?: number;
-    message?: string;
+  const data: ZAIResponse = await response.json();
+
+  if (!data.choices || data.choices.length === 0) {
+    throw new Error("No response choices returned from Z AI API");
+  }
+
+  // try {
+  //   // Prepare a timestamped filename to avoid overwriting previous responses
+  //   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  //   const filename = `anthropic-review-response-${timestamp}.json`;
+  //   // Save the data object as a JSON string with indentation
+  //   await Bun.write(filename, JSON.stringify(data, null, 2));
+  //   console.log(`Saved Z AI API response to ${filename}`);
+  // } catch (err) {
+  //   console.warn("Failed to save Z AI API response JSON file:", err);
+  // }
+
+  return data.choices[0].message.content;
+}
+
+// --- Streaming variant ---
+async function fetchPRReviewStream(
+  prDiff: string,
+  prDescription?: string,
+  apiKey?: string,
+  onChunk?: (chunk: string) => void
+): Promise<string> {
+  const key = apiKey || process.env.Z_AI_API_KEY;
+
+  if (!key) {
+    throw new Error("Z AI API key is required.");
+  }
+
+  const userMessage = prDescription
+    ? `**PR Description:**\n${prDescription}\n\n**Code Diff:**\n\`\`\`diff\n${prDiff}\n\`\`\``
+    : `**Code Diff:**\n\`\`\`diff\n${prDiff}\n\`\`\``;
+
+  const response = await fetch(
+    "https://api.z.ai/api/paas/v4/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify({
+        model: "glm-4-7",
+        messages: [
+          { role: "system", content: PR_REVIEWER_SYSTEM_PROMPT },
+          { role: "user", content: userMessage },
+        ],
+        "thinking": {
+          "type": "enabled"
+        },
+        temperature: 1.0,
+        max_tokens: 4096,
+        stream: true,
+      }),
+    }
+  );
+
+  if (!response.ok || !response.body) {
+    const error = await response.text();
+    throw new Error(`Z AI API request failed: ${response.status}\n${error}`);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let fullContent = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    const chunk = decoder.decode(value, { stream: true });
+    const lines = chunk.split("\n").filter((line) => line.trim());
+
+    for (const line of lines) {
+      if (!line.startsWith("data: ")) continue;
+      const data = line.slice(6).trim();
+      if (data === "[DONE]") break;
+
+      try {
+        const parsed = JSON.parse(data);
+        const content = parsed.choices?.[0]?.delta?.content;
+        if (content) {
+          fullContent += content;
+          onChunk?.(content);
+        }
+      } catch {
+        // Skip malformed chunks
+      }
+    }
+  }
+
+  return fullContent;
+}
+
+async function getLatestCommitDiffAndMessage(): Promise<{
+  diff: string;
+  commitMessage: string;
+}> {
+  const { diff, commitMessages } = await getCommitDiffAndMessages(1);
+  return { diff, commitMessage: commitMessages[0] ?? "(No commit message)" };
+}
+
+async function getCommitDiffAndMessages(n: number): Promise<{
+  diff: string;
+  commitMessages: string[];
+}> {
+  if (n < 1) {
+    throw new Error("n must be at least 1");
+  }
+
+  const [diffProc, logProc] = await Promise.all([
+    Bun.spawn(["git", "diff", `HEAD~${n}`, "HEAD"], {
+      stdout: "pipe",
+      stderr: "pipe",
+    }),
+    Bun.spawn(["git", "log", `-${n}`, "--format=%B---COMMIT_SEP---", "HEAD"], {
+      stdout: "pipe",
+      stderr: "pipe",
+    }),
+  ]);
+
+  const [diffExit, logExit, diff, stderr, logOutput] = await Promise.all([
+    diffProc.exited,
+    logProc.exited,
+    new Response(diffProc.stdout).text(),
+    new Response(diffProc.stderr).text(),
+    new Response(logProc.stdout).text(),
+  ]);
+
+  if (diffExit !== 0) {
+    console.error("git diff stderr:", stderr);
+    throw new Error(`git diff failed with code ${diffExit}`);
+  }
+  if (logExit !== 0) {
+    throw new Error("git log failed");
+  }
+
+  const commitMessages = logOutput
+    .split("---COMMIT_SEP---")
+    .map((m) => m.trim())
+    .filter(Boolean);
+
+  return {
+    diff: diff.trim() || "(No file changes in these commits)",
+    commitMessages: commitMessages.length ? commitMessages : ["(No commit message)"],
+  };
+}
+
+const PR_COMMENT_MARKER = "<!-- z-ai-pr-review -->";
+
+async function postReviewToPRComment(body: string): Promise<void> {
+  const token = process.env.GITHUB_TOKEN;
+  const repo = process.env.GITHUB_REPOSITORY;
+  const eventPath = process.env.GITHUB_EVENT_PATH;
+
+  if (!token || !repo) {
+    console.error("Missing GITHUB_TOKEN or GITHUB_REPOSITORY. Skipping PR comment.");
+    return;
+  }
+
+  let prNumber: number | null = null;
+  if (eventPath) {
+    try {
+      const event = JSON.parse(await Bun.file(eventPath).text()) as {
+        pull_request?: { number?: number };
+      };
+      prNumber = event.pull_request?.number ?? null;
+    } catch {
+      console.warn("Could not read GITHUB_EVENT_PATH");
+    }
+  }
+
+  if (!prNumber) {
+    console.error("PR number not found (GITHUB_EVENT_PATH or pull_request). Skipping.");
+    return;
+  }
+
+  const [owner, repoName] = repo.split("/");
+  const commentBody = `${PR_COMMENT_MARKER}\n\n## 🤖 Z.AI Code Review\n\n${body}`;
+
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+    "Content-Type": "application/json",
   };
 
-  if (data.error) {
-    throw new Error(`Z.AI API error: ${data.error.message}`);
-  }
-  if (data.code && data.code !== 200) {
-    throw new Error(`Z.AI API error: ${data.message ?? "Unknown error"}`);
-  }
-
-  const msg = data.choices?.[0]?.message;
-  const content = msg?.content?.trim();
-  const reasoning = msg?.reasoning_content?.trim();
-
-  // Z.AI may put output in content, reasoning_content, or both (thinking models)
-  if (content) {
-    return reasoning ? `${reasoning}\n\n---\n\n${content}` : content;
-  }
-  if (reasoning) {
-    return reasoning;
-  }
-
-  // Debug: log structure without full payload
-  const structure = JSON.stringify(
-    {
-      hasChoices: !!data.choices,
-      choicesLen: data.choices?.length ?? 0,
-      firstChoice: data.choices?.[0]
-        ? {
-            hasMessage: !!data.choices[0].message,
-            messageKeys: data.choices[0].message
-              ? Object.keys(data.choices[0].message)
-              : [],
-          }
-        : null,
-    },
-    null,
-    2
-  );
-  throw new Error(`No review content in Z.AI response. Response structure: ${structure}`);
-}
-
-type ReviewIssue = { path: string; line: number; severity: string; title: string; body: string };
-
-async function getCommitSha(): Promise<string> {
-  const sha = process.env.GITHUB_SHA;
-  if (sha) return sha;
-  const proc = Bun.spawn(["git", "rev-parse", "HEAD"], { stdout: "pipe" });
-  return (await new Response(proc.stdout).text()).trim();
-}
-
-async function postCodexReview(issues: ReviewIssue[]): Promise<void> {
-  const token = process.env.GITHUB_TOKEN;
-  const repo = process.env.GITHUB_REPOSITORY;
-  const prNumber = process.env.GITHUB_EVENT_PATH
-    ? (JSON.parse(await Bun.file(process.env.GITHUB_EVENT_PATH).text()) as { pull_request?: { number?: number } })
-        .pull_request?.number
-    : null;
-
-  if (!token || !repo || !prNumber) {
-    console.error("Missing GITHUB_TOKEN, GITHUB_REPOSITORY, or PR number. Skipping review.");
-    return;
-  }
-
-  const [owner, repoName] = repo.split("/");
-  const commitId = await getCommitSha();
-  const shortSha = commitId.slice(0, 9);
-
-  const mainBody = `💡 Codex Review
-
-Here are some automated review suggestions for this pull request.
-
-**Reviewed commit:** \`${shortSha}\``;
-
-  const comments = issues.map((i) => ({
-    path: i.path,
-    line: i.line,
-    side: "RIGHT" as const,
-    body: `**${i.severity}** ${i.title}\n\n${i.body}`,
-  }));
-
-  const body = issues.length > 0 ? mainBody : `${mainBody}\n\nNo critical issues found. ✅`;
-
-  const res = await fetch(
-    `https://api.github.com/repos/${owner}/${repoName}/pulls/${prNumber}/reviews`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        commit_id: commitId,
-        body,
-        event: "COMMENT",
-        comments,
-      }),
-    }
+  const listRes = await fetch(
+    `https://api.github.com/repos/${owner}/${repoName}/issues/${prNumber}/comments`,
+    { headers }
   );
 
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`GitHub API error ${res.status}: ${err}`);
-  }
-  console.log(`Posted review with ${issues.length} line comment(s)`);
-}
-
-async function postCodexReviewWithFallback(rawBody: string): Promise<void> {
-  const token = process.env.GITHUB_TOKEN;
-  const repo = process.env.GITHUB_REPOSITORY;
-  const prNumber = process.env.GITHUB_EVENT_PATH
-    ? (JSON.parse(await Bun.file(process.env.GITHUB_EVENT_PATH).text()) as { pull_request?: { number?: number } })
-        .pull_request?.number
-    : null;
-
-  if (!token || !repo || !prNumber) {
-    console.error("Missing GITHUB_TOKEN, GITHUB_REPOSITORY, or PR number. Skipping.");
-    return;
+  if (!listRes.ok) {
+    throw new Error(`GitHub API list comments failed: ${listRes.status}`);
   }
 
-  const [owner, repoName] = repo.split("/");
-  const commitId = await getCommitSha();
-  const shortSha = commitId.slice(0, 9);
+  const comments = (await listRes.json()) as Array<{ id: number; body?: string }>;
+  const existing = comments.find((c) => c.body?.includes(PR_COMMENT_MARKER));
 
-  const body = `💡 Codex Review
-
-Here are some automated review suggestions for this pull request.
-
-**Reviewed commit:** \`${shortSha}\`
-
----
-
-${rawBody}`;
-
-  const res = await fetch(
-    `https://api.github.com/repos/${owner}/${repoName}/pulls/${prNumber}/reviews`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        commit_id: commitId,
-        body,
-        event: "COMMENT",
-        comments: [],
-      }),
-    }
-  );
-  if (!res.ok) throw new Error(`GitHub API error ${res.status}: ${await res.text()}`);
-  console.log("Posted review (fallback, no line comments)");
+  if (existing) {
+    const res = await fetch(
+      `https://api.github.com/repos/${owner}/${repoName}/issues/comments/${existing.id}`,
+      {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ body: commentBody }),
+      }
+    );
+    if (!res.ok) throw new Error(`GitHub API update comment failed: ${res.status}`);
+    console.log("Updated existing PR review comment");
+  } else {
+    const res = await fetch(
+      `https://api.github.com/repos/${owner}/${repoName}/issues/${prNumber}/comments`,
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ body: commentBody }),
+      }
+    );
+    if (!res.ok) throw new Error(`GitHub API create comment failed: ${res.status}`);
+    console.log("Posted new PR review comment");
+  }
 }
 
+function extractRevNumber (commitMessage: string) {
+  const match = commitMessage.match(/\(rev(\d+)\)/);
+  return match ? Number(match?.[1]) : 1
+}
+
+// --- Example usage ---
 async function main() {
-  const isDryRun = process.argv.includes("--dry-run");
+  console.log("Fetching revN...")
+  const revNObject = await getLatestCommitDiffAndMessage()
+  const revN = extractRevNumber(revNObject.commitMessage)
 
   console.log("Fetching PR diff...");
-  const diff = await getPrDiff();
-  console.log(`Diff length: ${diff.length} chars`);
+  const diffObject = await getCommitDiffAndMessages(revN);
 
-  if (isDryRun) {
-    console.log("\n--- Diff preview (first 2000 chars) ---\n");
-    console.log(diff.slice(0, 2000));
-    if (diff.length > 2000) console.log("\n... (truncated)");
-    console.log("\n✓ Dry run complete. Run without --dry-run to call Z.AI (requires Z_AI_API_KEY).");
-    return;
+  console.log("Fetching PR review...\n");
+  const review = await fetchPRReview(
+    diffObject.diff,
+    diffObject.commitMessages.join("\n")
+  );
+
+  if (process.env.GITHUB_TOKEN && process.env.GITHUB_EVENT_PATH) {
+    console.log("\nPosting review to PR...");
+    await postReviewToPRComment(review);
   }
-
-  console.log("Sending to Z.AI GLM for review...");
-  const rawReview = await getReviewFromGlm(diff);
-
-  const jsonStr = rawReview.match(/\{[\s\S]*\}/)?.[0] ?? rawReview;
-  let issues: ReviewIssue[] = [];
-  let parseFailed = false;
-  try {
-    const parsed = JSON.parse(jsonStr) as { issues?: ReviewIssue[] };
-    issues = Array.isArray(parsed?.issues) ? parsed.issues : [];
-  } catch {
-    console.warn("Could not parse LLM JSON, posting raw review in body");
-    parseFailed = true;
-  }
-
-  if (parseFailed) {
-    await postCodexReviewWithFallback(rawReview);
-    return;
-  }
-
-  console.log(`Found ${issues.length} issue(s)`);
-  issues.forEach((i) => console.log(`  - ${i.severity} ${i.path}:${i.line} ${i.title}`));
-
-  console.log("\nPosting review to PR...");
-  await postCodexReview(issues);
-
   console.log("Done.");
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+main().catch(console.error);
