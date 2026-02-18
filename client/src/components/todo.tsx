@@ -22,7 +22,10 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { InputWithIcon } from '@/components/ui/inputwithicon'
-import { CalendarDropdown } from '@/components/calendar-dropdown'
+import {
+  CalendarDropdown,
+  CalendarDropdownContent,
+} from '@/components/calendar-dropdown'
 import {
   Dialog,
   DialogContent,
@@ -633,10 +636,17 @@ export const TodoComponent = React.memo(
                           type="button"
                           variant="none"
                           size="sm"
-                          className="group h-6 hover:bg-[#4c4c50] rounded-md [&_svg]:pointer-events-auto text-xs gap-0.75 font-semibold"
+                          className="group h-6 hover:bg-[#4c4c50] rounded-md [&_svg]:pointer-events-auto text-sm md:text-xs gap-0.75 font-semibold"
+                          onClick={
+                            isMobile
+                              ? () => {
+                                  handleChangeCalendar(true)
+                                }
+                              : () => null
+                          }
                         >
                           <StartIcon
-                            className="size-3"
+                            className="size-4 md:size-3"
                             color={color}
                             {...(StartIcon === Star ? { fill: color } : {})}
                           />
@@ -665,17 +675,24 @@ export const TodoComponent = React.memo(
                           type="button"
                           variant="none"
                           size="sm"
-                          className="group h-6 hover:bg-[#4c4c50] rounded-md [&_svg]:pointer-events-auto text-xs gap-0.75 font-semibold"
+                          className="group h-6 hover:bg-[#4c4c50] rounded-md [&_svg]:pointer-events-auto text-sm md:text-xs gap-0.75 font-semibold"
+                          onClick={
+                            isMobile
+                              ? () => {
+                                  handleChangeDueCalendar(true)
+                                }
+                              : () => null
+                          }
                         >
                           <DueIcon
                             fill={color}
-                            className="size-3"
+                            className="size-4 md:size-3"
                             style={{ color }}
                           />
                           <span>Deadline: {label}</span>
                           <span
                             className={cn(
-                              'text-[0.65rem] opacity-60',
+                              'ml-1 text-[0.65rem] opacity-60',
                               isOverdue && 'text-red-400 opacity-100',
                             )}
                           >
@@ -694,14 +711,46 @@ export const TodoComponent = React.memo(
                 </div>
 
                 {/* calendar-tag-calendar */}
-                <div className="flex items-center gap-0.5">
-                  {!startAt && (
-                    <CalendarDropdown
-                      open={isCalendarOpen}
-                      onOpenChange={handleChangeCalendar}
-                      selectedDate={startAt ? new Date(startAt) : null}
-                      onSelectDate={handleSelectStartDate}
-                    />
+                <div className="flex items-center gap-1 md:gap-0.5">
+                  {isMobile ? (
+                    <>
+                      {!startAt && (
+                        <Button
+                          type="button"
+                          variant="none"
+                          size="none"
+                          onClick={() => handleChangeCalendar(true)}
+                          className="p-1"
+                        >
+                          <CalendarDays className="size-4 md:size-3" />
+                        </Button>
+                      )}
+                      <Dialog
+                        open={isCalendarOpen}
+                        onOpenChange={handleChangeCalendar}
+                      >
+                        <DialogContent className="w-[80%] bg-sloth-aside-background text-sloth-foreground p-4 gap-4 max-h-[85vh] overflow-y-auto rounded-xl">
+                          <DialogHeader>
+                            <DialogTitle>When?</DialogTitle>
+                          </DialogHeader>
+                          <CalendarDropdownContent
+                            className="w-full"
+                            selectedDate={startAt ? new Date(startAt) : null}
+                            onSelectDate={handleSelectStartDate}
+                            onClose={() => handleChangeCalendar(false)}
+                          />
+                        </DialogContent>
+                      </Dialog>
+                    </>
+                  ) : (
+                    !startAt && (
+                      <CalendarDropdown
+                        open={isCalendarOpen}
+                        onOpenChange={handleChangeCalendar}
+                        selectedDate={startAt ? new Date(startAt) : null}
+                        onSelectDate={handleSelectStartDate}
+                      />
+                    )
                   )}
 
                   {isMobile ? (
@@ -1029,7 +1078,76 @@ export const TodoComponent = React.memo(
                     </DropdownMenu>
                   )}
 
-                  {!dueAt && (
+                  {/* {!dueAt &&
+                    (isMobile ? (
+                      <>
+                        <Button
+                          type="button"
+                          variant="none"
+                          size="none"
+                          onClick={() => handleChangeDueCalendar(true)}
+                          className="p-1"
+                        >
+                          <Flag className="size-4 md:size-3" />
+                        </Button>
+                        <Dialog
+                          open={isDueCalendarOpen}
+                          onOpenChange={handleChangeDueCalendar}
+                        >
+                          <DialogContent className="w-[80%] bg-sloth-aside-background text-sloth-foreground p-4 gap-4 max-h-[85vh] overflow-y-auto rounded-xl">
+                            <DialogHeader>
+                              <DialogTitle>Due date?</DialogTitle>
+                            </DialogHeader>
+                            <CalendarDropdownContent
+                              className="w-full"
+                              selectedDate={dueAt ? new Date(dueAt) : null}
+                              onSelectDate={handleSelectDueDate}
+                              onClose={() => handleChangeDueCalendar(false)}
+                            />
+                          </DialogContent>
+                        </Dialog>
+                      </>
+                    ) : (
+                      <CalendarDropdown
+                        open={isDueCalendarOpen}
+                        onOpenChange={handleChangeDueCalendar}
+                        selectedDate={dueAt ? new Date(dueAt) : null}
+                        onSelectDate={handleSelectDueDate}
+                        icon={Flag}
+                      />
+                    ))} */}
+
+                  {isMobile ? (
+                    <>
+                      {!dueAt && (
+                        <Button
+                          type="button"
+                          variant="none"
+                          size="none"
+                          onClick={() => handleChangeDueCalendar(true)}
+                          className="p-1"
+                        >
+                          <Flag className="size-4 md:size-3" />
+                        </Button>
+                      )}
+                      <Dialog
+                        open={isDueCalendarOpen}
+                        onOpenChange={handleChangeDueCalendar}
+                      >
+                        <DialogContent className="w-[80%] bg-sloth-aside-background text-sloth-foreground p-4 gap-4 max-h-[85vh] overflow-y-auto rounded-xl">
+                          <DialogHeader>
+                            <DialogTitle>Due date?</DialogTitle>
+                          </DialogHeader>
+                          <CalendarDropdownContent
+                            className="w-full"
+                            selectedDate={dueAt ? new Date(dueAt) : null}
+                            onSelectDate={handleSelectDueDate}
+                            onClose={() => handleChangeDueCalendar(false)}
+                          />
+                        </DialogContent>
+                      </Dialog>
+                    </>
+                  ) : (
                     <CalendarDropdown
                       open={isDueCalendarOpen}
                       onOpenChange={handleChangeDueCalendar}
