@@ -53,6 +53,8 @@ async function getReviewFromGlm(diff: string): Promise<string> {
     throw new Error("Z_AI_API_KEY secret is not set. Add it in repo Settings > Secrets and variables > Actions.");
   }
 
+  // throw new Error("Break")
+
   const response = await fetch(Z_AI_API_URL, {
     method: "POST",
     headers: {
