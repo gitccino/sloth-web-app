@@ -195,13 +195,27 @@ async function postPrComment(body: string): Promise<void> {
 }
 
 async function main() {
+  const isDryRun = process.argv.includes("--dry-run");
+
   console.log("Fetching PR diff...");
   const diff = await getPrDiff();
+  console.log(`Diff length: ${diff.length} chars`);
+
+  if (isDryRun) {
+    console.log("\n--- Diff preview (first 2000 chars) ---\n");
+    console.log(diff.slice(0, 2000));
+    if (diff.length > 2000) console.log("\n... (truncated)");
+    console.log("\n✓ Dry run complete. Run without --dry-run to call Z.AI (requires Z_AI_API_KEY).");
+    return;
+  }
 
   console.log("Sending to Z.AI GLM for review...");
   const review = await getReviewFromGlm(diff);
 
-  console.log("Posting review to PR...");
+  console.log("Review received:\n");
+  console.log(review);
+
+  console.log("\nPosting review to PR...");
   await postPrComment(review);
 
   console.log("Done.");
