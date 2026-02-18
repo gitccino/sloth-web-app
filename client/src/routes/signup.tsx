@@ -16,7 +16,7 @@ import { InputWithIcon } from '@/components/ui/inputwithicon'
 import { authClient } from '@/lib/auth-client'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Loading } from '@/components/Loading'
-import { RegisterArt } from '@/assets'
+import { RegisterArt } from '@/constants/assets'
 
 export const Route = createFileRoute('/signup')({
   component: RouteComponent,

@@ -5,7 +5,7 @@ import { motion } from 'motion/react'
 import { authClient } from '@/lib/auth-client'
 import { Button } from '@/components/ui/button'
 import { useNavStore } from '@/lib/store'
-import { SlothLogo } from '@/assets'
+import { SlothLogo } from '@/constants/assets'
 
 export default function Header() {
   const location = useLocation()

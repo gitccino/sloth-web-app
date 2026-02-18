@@ -21,7 +21,7 @@ import { authClient } from '@/lib/auth-client'
 import { Loading } from '@/components/Loading'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { useNavStore } from '@/lib/store'
-import { RegisterArt } from '@/assets'
+import { RegisterArt } from '@/constants/assets'
 // import registerBg2 from '@/assets/register-bg-2.png'
 
 export const Route = createFileRoute('/signin')({

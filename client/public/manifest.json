@@ -1,6 +1,18 @@
 {
-  "short_name": "Hono Todo App",
-  "name": "Hono Todo App",
+  "short_name": "Sloth",
+  "name": "Sloth",
+  "icons": [
+    {
+      "src": "logo-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
   "start_url": ".",
   "display": "standalone"
 }

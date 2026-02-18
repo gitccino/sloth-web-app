@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { auth } from "./lib/auth";
 import { todos } from "./routes/todos.routes";
 import { tags } from "./routes/tags.routes";
+import { infra } from "./routes/infra.routes";
 import { serveStatic } from "hono/bun";
 import { logger } from "hono/logger";
 
@@ -11,6 +12,7 @@ const router = app
   .use(logger())
   .use("/*", serveStatic({ root: "./client/dist" }))
   .on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw))
+  .route("/api/infra", infra)
   .route("/api/todos", todos)
   .route("/api/tags", tags)
   .get("/*", serveStatic({ path: "./client/dist" }));
