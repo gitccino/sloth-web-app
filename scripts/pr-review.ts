@@ -200,16 +200,59 @@ async function getCommitDiffAndMessages(n: number): Promise<{
     throw new Error("n must be at least 1");
   }
 
-  const [diffProc, logProc] = await Promise.all([
-    Bun.spawn(["git", "diff", `HEAD~${n}`, "HEAD"], {
-      stdout: "pipe",
-      stderr: "pipe",
-    }),
-    Bun.spawn(["git", "log", `-${n}`, "--format=%B---COMMIT_SEP---", "HEAD"], {
-      stdout: "pipe",
-      stderr: "pipe",
-    }),
-  ]);
+  let diffProc,logProc
+  if (n === -1) {
+    // fetch all commits in this PR instead
+    // We'll use environment variables set by GitHub Actions to get the PR base and head shas.
+    // If they aren't present, fallback to `HEAD` as both base and head.
+    const githubEventPath = process.env.GITHUB_EVENT_PATH;
+    let baseSha: string | undefined;
+    let headSha: string | undefined;
+
+    if (githubEventPath) {
+      try {
+        const event = JSON.parse(await Bun.file(githubEventPath).text());
+        baseSha = event.pull_request?.base?.sha;
+        headSha = event.pull_request?.head?.sha;
+      } catch {
+        // Ignore parse error, fallback below
+      }
+    }
+
+    // Fallback: use HEAD and HEAD~1 (single commit diff)
+    if (!baseSha || !headSha) {
+      baseSha = "HEAD~1";
+      headSha = "HEAD";
+    }
+
+    [diffProc, logProc] = await Promise.all([
+      Bun.spawn(["git", "diff", `${baseSha}`, `${headSha}`], {
+        stdout: "pipe",
+        stderr: "pipe",
+      }),
+      Bun.spawn([
+        "git",
+        "log",
+        `${baseSha}..${headSha}`,
+        "--format=%B---COMMIT_SEP---",
+        `${headSha}`,
+      ], {
+        stdout: "pipe",
+        stderr: "pipe",
+      }),
+    ]);
+  } else {
+    [diffProc, logProc] = await Promise.all([
+      Bun.spawn(["git", "diff", `HEAD~${n}`, "HEAD"], {
+        stdout: "pipe",
+        stderr: "pipe",
+      }),
+      Bun.spawn(["git", "log", `-${n}`, "--format=%B---COMMIT_SEP---", "HEAD"], {
+        stdout: "pipe",
+        stderr: "pipe",
+      }),
+    ]);
+  }
 
   const [diffExit, logExit, diff, stderr, logOutput] = await Promise.all([
     diffProc.exited,
@@ -315,7 +358,8 @@ async function postReviewToPRComment(body: string): Promise<void> {
 }
 
 function extractRevNumber (commitMessage: string) {
-  const match = commitMessage.match(/\(rev(\d+)\)/);
+  // const match = commitMessage.match(/\(rev(\d+)\)/);
+  const match = commitMessage.match(/\((?:rev)(-?\d+)\)/);
   return match ? Number(match?.[1]) : 1
 }
 
