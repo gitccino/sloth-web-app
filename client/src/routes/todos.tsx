@@ -347,7 +347,7 @@ function RouteComponent() {
               },
             },
           }}
-          className="fixed left-1/2 -translate-x-1/2 bottom-6 md:bottom-10 px-2 py-1 rounded-lg flex items-center justify-center gap-0 bg-[#343338]"
+          className="fixed left-1/2 -translate-x-1/2 bottom-6 md:bottom-10 px-2 py-1 rounded-full md:rounded-lg border-[0.5px] border-sloth-background-hover-2 flex items-center justify-center gap-0 bg-sloth-background-hover"
           data-ignore-click-outside
         >
           <Button
@@ -385,7 +385,7 @@ function RouteComponent() {
               },
             },
           }}
-          className="fixed bottom-10 right-10 z-50"
+          className="fixed md:hidden bottom-10 right-10 z-50"
         >
           <Button
             size="none"
