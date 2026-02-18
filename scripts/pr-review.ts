@@ -62,6 +62,7 @@ async function getReviewFromGlm(diff: string): Promise<string> {
       ],
       temperature: 0.3,
       max_tokens: 4000,
+      stream: false,
     }),
   });
 
@@ -71,20 +72,51 @@ async function getReviewFromGlm(diff: string): Promise<string> {
   }
 
   const data = (await response.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
+    choices?: Array<{
+      message?: { content?: string | null; reasoning_content?: string | null };
+    }>;
     error?: { message?: string };
+    code?: number;
+    message?: string;
   };
 
   if (data.error) {
     throw new Error(`Z.AI API error: ${data.error.message}`);
   }
-
-  const content = data.choices?.[0]?.message?.content;
-  if (!content) {
-    throw new Error("No review content in Z.AI response");
+  if (data.code && data.code !== 200) {
+    throw new Error(`Z.AI API error: ${data.message ?? "Unknown error"}`);
   }
 
-  return content;
+  const msg = data.choices?.[0]?.message;
+  const content = msg?.content?.trim();
+  const reasoning = msg?.reasoning_content?.trim();
+
+  // Z.AI may put output in content, reasoning_content, or both (thinking models)
+  if (content) {
+    return reasoning ? `${reasoning}\n\n---\n\n${content}` : content;
+  }
+  if (reasoning) {
+    return reasoning;
+  }
+
+  // Debug: log structure without full payload
+  const structure = JSON.stringify(
+    {
+      hasChoices: !!data.choices,
+      choicesLen: data.choices?.length ?? 0,
+      firstChoice: data.choices?.[0]
+        ? {
+            hasMessage: !!data.choices[0].message,
+            messageKeys: data.choices[0].message
+              ? Object.keys(data.choices[0].message)
+              : [],
+          }
+        : null,
+    },
+    null,
+    2
+  );
+  throw new Error(`No review content in Z.AI response. Response structure: ${structure}`);
 }
 
 async function postPrComment(body: string): Promise<void> {
