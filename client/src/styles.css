@@ -155,6 +155,9 @@ code {
   --sloth-aside-background-hover: #3b3c3f50;
   --sloth-foreground: #f4f5e0;
   --sloth-destructive: #e84b58;
+  --sloth-cream: #e4d7b0;
+  --sloth-brown-dark: #443c38;
+  --sloth-brown: #6a5949;
 }
 
 @theme {
@@ -242,6 +245,9 @@ code {
   --color-sloth-aside-background-hover: var(--sloth-aside-background-hover);
   --color-sloth-foreground: var(--sloth-foreground);
   --color-sloth-destructive: var(--sloth-destructive);
+  --color-sloth-cream: var(--sloth-cream);
+  --color-sloth-brown: var(--sloth-brown);
+  --color-sloth-brown-dark: var(--sloth-brown-dark);
 }
 
 .dark {
@@ -373,11 +379,12 @@ code {
 
   /* Prevent mobile browser zoom on input focus (iOS requires ≥16px to avoid auto-zoom) */
   @media screen and (max-width: 768px) {
-    input,
+    /* input,
     select,
     textarea {
       font-size: 16px !important;
-    }
+    } */
+
     /* Tag search input: 14px on mobile (zoom disabled via viewport in index.html) */
     #tag-input {
       font-size: 14px !important;

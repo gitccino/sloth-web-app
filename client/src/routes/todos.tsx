@@ -48,6 +48,8 @@ import {
   useDeleteTodo,
 } from '@/utils/tanstack-query/useMutation.ts'
 
+import { useIsMobile } from '@/hooks/use-mobile.ts'
+
 const client = hc<AppType>('/')
 
 export const Route = createFileRoute('/todos')({
@@ -56,6 +58,7 @@ export const Route = createFileRoute('/todos')({
 
 function RouteComponent() {
   const router = useRouter()
+  const isMobile = useIsMobile()
   const { data: session, isPending } = authClient.useSession()
   const { data, isError, error } = useQuery({
     queryKey: ['todos'],
@@ -134,17 +137,30 @@ function RouteComponent() {
       open={sidebarOpen}
       onOpenChange={setSidebarOpen}
       className="text-core-background"
+      style={
+        {
+          '--sidebar': isMobile
+            ? 'var(--sloth-background)'
+            : 'var(--sloth-aside-background)',
+        } as React.CSSProperties
+      }
     >
-      <Sidebar collapsible="icon" className="border-0!">
-        <SidebarHeader className="flex items-end p-1">
-          <SidebarTrigger className="mr-1 size-6 text-core-muted-foreground hover:text-sloth-foreground hover:bg-sloth-aside-background-hover" />
-        </SidebarHeader>
-        <SidebarContent className="gap-2 overflow-x-hidden">
+      <Sidebar collapsible="icon" className="border-0! bg-sloth-background">
+        {!isMobile && (
+          <SidebarHeader className="flex items-end p-1">
+            <SidebarTrigger className="mr-1 size-6 text-core-muted-foreground hover:text-sloth-foreground hover:bg-sloth-aside-background-hover" />
+          </SidebarHeader>
+        )}
+
+        <SidebarContent className="pt-10 md:pt-0 gap-2 overflow-x-hidden">
           <SidebarGroup className="p-0 px-2">
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Inbox" className="h-7 font-medium">
-                  <Inbox color="#18AEF8" />
+                <SidebarMenuButton
+                  tooltip="Inbox"
+                  className="h-7 font-semibold mx-2 md:mx-0"
+                >
+                  <Inbox color="#18AEF8" strokeWidth={2.5} />
                   <span>Inbox</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -154,7 +170,11 @@ function RouteComponent() {
           <SidebarGroup className="p-0 px-2">
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Today" className="h-7 font-medium">
+                <SidebarMenuButton
+                  tooltip="Today"
+                  className="h-7 font-semibold mx-2 md:mx-0"
+                  onClick={isMobile ? () => setSidebarOpen(false) : () => null}
+                >
                   <Star color="#FFD400" fill="#FFD400" />
                   <span>Today</span>
                 </SidebarMenuButton>
@@ -162,7 +182,7 @@ function RouteComponent() {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   tooltip="Upcoming"
-                  className="h-7 font-medium"
+                  className="h-7 font-semibold mx-2 md:mx-0"
                 >
                   <CalendarDays color="#FA1855" />
                   <span>Upcoming</span>
@@ -171,7 +191,7 @@ function RouteComponent() {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   tooltip="Anytime"
-                  className="h-7 font-medium"
+                  className="h-7 font-semibold mx-2 md:mx-0"
                 >
                   <Layers color="#39A99D" />
                   <span>Anytime</span>
@@ -180,14 +200,14 @@ function RouteComponent() {
             </SidebarMenu>
           </SidebarGroup>
 
-          <SidebarSeparator className="bg-white/5" />
+          {/* <SidebarSeparator className="bg-white/5" /> */}
 
-          <SidebarGroup className="p-0 px-2">
+          {/* <SidebarGroup className="p-0 px-2">
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   tooltip="Add new todo"
-                  className="h-7 font-medium"
+                  className="h-7 font-semibold mx-2 md:mx-0"
                   onClick={handleCreateNewTodo}
                 >
                   <Plus />
@@ -195,7 +215,7 @@ function RouteComponent() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
-          </SidebarGroup>
+          </SidebarGroup> */}
 
           <SidebarSeparator className="bg-white/5" />
 
@@ -204,16 +224,16 @@ function RouteComponent() {
               {tags?.map((tag) => (
                 <SidebarMenuItem
                   key={`tag-${tag.id}`}
-                  className="flex items-center hover:bg-sloth-aside-background-hover rounded-md"
+                  className="flex items-center hover:bg-sloth-aside-background-hover rounded-md mx-2 md:mx-0"
                 >
                   <SidebarMenuButton
                     variant="none"
                     tooltip={tag.name}
-                    className="h-7 font-medium"
+                    className="h-7 font-medium flex gap-3"
                   >
                     <div className="size-4 shrink-0 flex items-center justify-center">
                       <div
-                        className="size-3 rounded"
+                        className="size-4 rounded-xs"
                         style={{ backgroundColor: tag.color || '#808080' }}
                       />
                     </div>
@@ -221,7 +241,7 @@ function RouteComponent() {
                   </SidebarMenuButton>
                   <SidebarMenuAction
                     showOnHover
-                    className="hover:text-sloth-destructive"
+                    className="hover:text-sloth-destructive text-muted-foreground md:text-sloth-foreground"
                     onClick={(e) => {
                       e.stopPropagation()
                       deleteTagMutation.mutate({ id: tag.id })
@@ -235,12 +255,12 @@ function RouteComponent() {
           </SidebarGroup>
         </SidebarContent>
 
-        <SidebarFooter className="px-2">
+        <SidebarFooter className="px-2 mb-10">
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton
                 tooltip="Logout"
-                className="h-7 font-medium"
+                className="h-7 font-semibold mx-2 md:mx-0"
                 onClick={handleSignout}
               >
                 <LogOut color="#e84b58" />
@@ -260,30 +280,43 @@ function RouteComponent() {
             </Alert>
           )}
 
-          {/* <SidebarTrigger
+          <SidebarTrigger
             icon={ChevronLeft}
-            className="bt size-6 text-core-muted-foreground hover:text-sloth-foreground hover:bg-sloth-aside-background-hover"
-          /> */}
+            className="md:hidden ml-1 h-fit w-fit p-1 text-core-muted-foreground hover:text-sloth-foreground hover:bg-sloth-aside-background-hover [&_svg:not([class*='size-'])]:size-8"
+          />
 
-          <div className="w-full py-16 flex flex-col items-start gap-1 text-sm">
-            {data &&
-              data.map((todo) => (
-                <TodoComponent
-                  key={todo.id}
-                  id={todo.id}
-                  title={todo.title}
-                  description={todo.description}
-                  completed={todo.completed}
-                  initialEditing={editingTodoId === todo.id}
-                  onEditStart={handleEditStart}
-                  onEditEnd={handleEditEnd}
-                  handleDeleteTodo={handleDeleteTodo}
-                  startAt={todo.startAt}
-                  dueAt={todo.dueAt}
-                  tags={tags}
-                  todoTags={todo.tags}
-                />
-              ))}
+          {/* <div className="ml-3 mb-6 md:mb-0 flex items-center gap-2">
+            <Star color="#FFD400" fill="#FFD400" />
+            <span className="text-2xl font-bold">Today</span>
+          </div> */}
+
+          <div className="w-full py-4 md:py-16 flex flex-col items-start gap-1 text-sm">
+            <div className="ml-3 mb-6 flex items-center gap-2">
+              <Star color="#FFD400" fill="#FFD400" />
+              <span className="text-2xl font-bold">Today</span>
+            </div>
+
+            {data && (
+              <div className="w-full flex flex-col gap-2">
+                {data.map((todo) => (
+                  <TodoComponent
+                    key={todo.id}
+                    id={todo.id}
+                    title={todo.title}
+                    description={todo.description}
+                    completed={todo.completed}
+                    initialEditing={editingTodoId === todo.id}
+                    onEditStart={handleEditStart}
+                    onEditEnd={handleEditEnd}
+                    handleDeleteTodo={handleDeleteTodo}
+                    startAt={todo.startAt}
+                    dueAt={todo.dueAt}
+                    tags={tags}
+                    todoTags={todo.tags}
+                  />
+                ))}
+              </div>
+            )}
 
             {data && data.length === 0 && (
               <div className="flex items-center gap-2 text-muted-foreground">
@@ -293,6 +326,7 @@ function RouteComponent() {
           </div>
         </div>
 
+        {/* Dock menu */}
         <motion.div
           initial="hidden"
           animate={isEditingMode ? 'visible' : 'hidden'}
@@ -313,7 +347,7 @@ function RouteComponent() {
               },
             },
           }}
-          className="fixed left-1/2 -translate-x-1/2 bottom- md:bottom-10 px-2 py-1 rounded-lg flex items-center justify-center gap-0 bg-[#343338]"
+          className="fixed left-1/2 -translate-x-1/2 bottom-6 md:bottom-10 px-2 py-1 rounded-full md:rounded-lg border-[0.5px] border-sloth-background-hover-2 flex items-center justify-center gap-0 bg-sloth-background-hover"
           data-ignore-click-outside
         >
           <Button
@@ -351,7 +385,7 @@ function RouteComponent() {
               },
             },
           }}
-          className="fixed bottom-10 right-10 z-50"
+          className="fixed md:hidden bottom-10 right-10 z-50"
         >
           <Button
             size="none"

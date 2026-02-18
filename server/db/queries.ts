@@ -1,4 +1,4 @@
-import { asc, desc, eq, and } from "drizzle-orm";
+import { asc, eq, and } from "drizzle-orm";
 import { db } from "./db";
 import { todos, tags, todoTags } from "./schema";
 
@@ -60,11 +60,7 @@ export const getTagsByUserId = async (userId: string) => {
 };
 
 export const getTagById = async (userId: string, tagId: string) => {
-  const [tag] = await db
-    .select()
-    .from(tags)
-    .where(eq(tags.id, tagId))
-    .limit(1);
+  const [tag] = await db.select().from(tags).where(eq(tags.id, tagId)).limit(1);
 
   // Ensure the tag belongs to the user
   if (tag && tag.userId === userId) {

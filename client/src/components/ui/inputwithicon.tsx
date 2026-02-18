@@ -13,7 +13,7 @@ const InputWithIcon = React.forwardRef<HTMLInputElement, InputWithIconProps>(
     const StartIcon = startIcon
     const EndIcon = endIcon
     return (
-      <div className="relative">
+      <div className="relative w-full">
         {StartIcon && (
           <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
             <StartIcon size={12} className="text-muted-foreground" />

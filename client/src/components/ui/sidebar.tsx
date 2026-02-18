@@ -32,7 +32,7 @@ const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 const SIDEBAR_WIDTH = '16rem'
 const SIDEBAR_WIDTH_MOBILE = '18rem'
 const SIDEBAR_WIDTH_ICON = '2.5rem'
-const SIDEBAR_KEYBOARD_SHORTCUT = 'b'
+// const SIDEBAR_KEYBOARD_SHORTCUT = 'b'
 
 type SidebarContextProps = {
   state: 'expanded' | 'collapsed'
@@ -41,6 +41,7 @@ type SidebarContextProps = {
   openMobile: boolean
   setOpenMobile: (open: boolean) => void
   isMobile: boolean
+  isControlled: boolean
   toggleSidebar: () => void
 }
 
@@ -90,10 +91,17 @@ function SidebarProvider({
     [setOpenProp, open],
   )
 
+  const isControlled = !!setOpenProp
+
   // Helper to toggle the sidebar.
   const toggleSidebar = React.useCallback(() => {
-    return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open)
-  }, [isMobile, setOpen, setOpenMobile])
+    if (isMobile) {
+      return isControlled
+        ? setOpen((prev) => !prev)
+        : setOpenMobile((prev) => !prev)
+    }
+    return setOpen((prev) => !prev)
+  }, [isMobile, isControlled, setOpen, setOpenMobile])
 
   // Keyboard shortcut is handled externally via TanStack Hotkeys.
 
@@ -109,9 +117,19 @@ function SidebarProvider({
       isMobile,
       openMobile,
       setOpenMobile,
+      isControlled,
       toggleSidebar,
     }),
-    [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar],
+    [
+      state,
+      open,
+      setOpen,
+      isMobile,
+      openMobile,
+      setOpenMobile,
+      isControlled,
+      toggleSidebar,
+    ],
   )
 
   return (
@@ -151,7 +169,15 @@ function Sidebar({
   variant?: 'sidebar' | 'floating' | 'inset'
   collapsible?: 'offcanvas' | 'icon' | 'none'
 }) {
-  const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+  const {
+    isMobile,
+    state,
+    openMobile,
+    setOpenMobile,
+    isControlled,
+    open,
+    setOpen,
+  } = useSidebar()
 
   if (collapsible === 'none') {
     return (
@@ -170,12 +196,17 @@ function Sidebar({
 
   if (isMobile) {
     return (
-      <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
+      <Sheet
+        open={isControlled ? open : openMobile}
+        onOpenChange={isControlled ? (v) => setOpen(v) : setOpenMobile}
+        {...props}
+      >
         <SheetContent
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
+          // className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden border-0"
+          className="bg-sidebar text-sidebar-foreground w-full p-0 [&>button]:hidden border-0"
           style={
             {
               '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
@@ -470,7 +501,7 @@ const sidebarMenuButtonVariants = cva(
   disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50\
   data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground\
   data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-6! group-data-[collapsible=icon]:p-1!\
-  [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0',
+  [&>span:last-child]:truncate [&>svg]:size-5 [&>svg]:md:size-4 [&>svg]:shrink-0',
   {
     variants: {
       variant: {
@@ -481,7 +512,7 @@ const sidebarMenuButtonVariants = cva(
         none: '',
       },
       size: {
-        default: 'h-8 text-sm',
+        default: 'h-8 text-lg md:text-base',
         sm: 'h-7 text-xs',
         lg: 'h-12 text-sm group-data-[collapsible=icon]:p-0!',
       },

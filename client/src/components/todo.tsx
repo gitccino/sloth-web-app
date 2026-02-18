@@ -1,15 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import {
-  CalendarDays,
-  Check,
-  Flag,
-  FlagTriangleRight,
-  Plus,
-  Star,
-  Tag,
-  X,
-} from 'lucide-react'
+import { CalendarDays, Check, Flag, Plus, Star, Tag, X } from 'lucide-react'
 import { Checkbox } from './ui/checkbox'
 import {
   useAddTagToTodo,
@@ -22,16 +13,26 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
+  // DropdownMenuPortal,
+  // DropdownMenuSeparator,
+  // DropdownMenuSub,
+  // DropdownMenuSubContent,
+  // DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { InputWithIcon } from '@/components/ui/inputwithicon'
-import { CalendarDropdown } from '@/components/calendar-dropdown'
+import {
+  CalendarDropdown,
+  CalendarDropdownContent,
+} from '@/components/calendar-dropdown'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 export interface Tag {
   id: string
@@ -212,6 +213,7 @@ export const TodoComponent = React.memo(
     const isCalendarOpenRef = useRef(false)
     const isDueCalendarOpenRef = useRef(false)
 
+    const isMobile = useIsMobile()
     const updateTodoMutation = useUpdateTodo()
     const addTagToTodoMutation = useAddTagToTodo()
     const removeTagFromTodoMutation = useRemoveTagFromTodo()
@@ -415,14 +417,13 @@ export const TodoComponent = React.memo(
     // Focus title input only when entering edit mode (skip on mobile to avoid keyboard popup)
     useEffect(() => {
       if (isEditing && !prevIsEditingRef.current && inputRef.current) {
-        const isMobile = window.matchMedia('(max-width: 767px)').matches
         if (!isMobile) {
           inputRef.current.focus()
         }
         autoResizeTextarea()
       }
       prevIsEditingRef.current = isEditing
-    }, [isEditing, autoResizeTextarea])
+    }, [isEditing, isMobile, autoResizeTextarea])
 
     // Handle click outside to save
     useEffect(() => {
@@ -491,13 +492,10 @@ export const TodoComponent = React.memo(
               data-checkbox
               checked={completed}
               onCheckedChange={handleToggleComplete}
-              className="size-3.5 mt-1 md:mt-1 rounded-[3px] border-core-background/30 data-[state=checked]:border-0 data-[state=checked]:bg-[#18AEF8] data-[state=checked]:text-core-foreground"
+              className="size-4 md:size-3.5 mt-1.5 md:mt-1.5 rounded-[3px] border-core-background/30 data-[state=checked]:border-0 data-[state=checked]:bg-[#18AEF8] data-[state=checked]:text-core-foreground"
             />
             <div className="w-full flex flex-col justify-start items-start">
-              <div
-                onClick={handleInitEditing}
-                className="relative w-full text-base md:text-sm"
-              >
+              <div onClick={handleInitEditing} className="relative w-full">
                 {isEditing ? (
                   // <input
                   //   ref={inputRef}
@@ -521,12 +519,12 @@ export const TodoComponent = React.memo(
                     // onKeyDown={(e) => {
                     //   if (e.key === 'Enter') e.preventDefault()
                     // }}
-                    className="w-[95%] md:w-[80%] border-0! ring-0! outline-none! shadow-none focus-visible:border-0! focus-visible:ring-0 focus-visible:outline-none resize-none overflow-hidden"
+                    className="w-[95%] md:w-[80%] text-lg md:text-base focus-visible:border-0 focus-visible:ring-0 focus-visible:outline-none resize-none overflow-hidden"
                     rows={1}
                   />
                 ) : (
                   <div className="relative w-full flex justify-start items-center gap-3 cursor-pointer">
-                    <span className="w-[80vw] md:w-fit min-w-0 truncate">
+                    <span className="w-[80vw] md:w-fit min-w-0 truncate text-lg md:text-base">
                       {editedTitle}
                     </span>
                     {todoTags.length > 0 && (
@@ -571,7 +569,7 @@ export const TodoComponent = React.memo(
                       name="description"
                       placeholder="Notes"
                       defaultValue={description ?? ''}
-                      className="mt-2 mb-4 min-h-10 w-full field-sizing-content resize-none outline-none"
+                      className="mt-2 mb-4 min-h-10 w-full field-sizing-content resize-none outline-none text-base md:text-sm"
                     />
                   </motion.div>
                 )}
@@ -598,7 +596,7 @@ export const TodoComponent = React.memo(
                   {todoTags.map((tag) => (
                     <span
                       key={tag.id}
-                      className="group/tag inline-flex items-center gap-0.5 px-2 py-0.5 rounded-sm font-semibold cursor-default"
+                      className="group/tag inline-flex items-center gap-0.5 px-2 py-0.5 rounded-sm font-bold md:font-semibold cursor-default"
                       style={{
                         backgroundColor: tag.color
                           ? `${tag.color}90`
@@ -638,10 +636,17 @@ export const TodoComponent = React.memo(
                           type="button"
                           variant="none"
                           size="sm"
-                          className="group h-6 hover:bg-[#4c4c50] rounded-md [&_svg]:pointer-events-auto text-xs gap-0.75 font-semibold"
+                          className="group h-6 hover:bg-[#4c4c50] rounded-md [&_svg]:pointer-events-auto text-sm md:text-xs gap-0.75 font-semibold"
+                          onClick={
+                            isMobile
+                              ? () => {
+                                  handleChangeCalendar(true)
+                                }
+                              : () => null
+                          }
                         >
                           <StartIcon
-                            className="size-3"
+                            className="size-4 md:size-3"
                             color={color}
                             {...(StartIcon === Star ? { fill: color } : {})}
                           />
@@ -670,17 +675,24 @@ export const TodoComponent = React.memo(
                           type="button"
                           variant="none"
                           size="sm"
-                          className="group h-6 hover:bg-[#4c4c50] rounded-md [&_svg]:pointer-events-auto text-xs gap-0.75 font-semibold"
+                          className="group h-6 hover:bg-[#4c4c50] rounded-md [&_svg]:pointer-events-auto text-sm md:text-xs gap-0.75 font-semibold"
+                          onClick={
+                            isMobile
+                              ? () => {
+                                  handleChangeDueCalendar(true)
+                                }
+                              : () => null
+                          }
                         >
                           <DueIcon
                             fill={color}
-                            className="size-3"
+                            className="size-4 md:size-3"
                             style={{ color }}
                           />
                           <span>Deadline: {label}</span>
                           <span
                             className={cn(
-                              'text-[0.65rem] opacity-60',
+                              'ml-1 text-[0.65rem] opacity-60',
                               isOverdue && 'text-red-400 opacity-100',
                             )}
                           >
@@ -699,22 +711,50 @@ export const TodoComponent = React.memo(
                 </div>
 
                 {/* calendar-tag-calendar */}
-                <div className="flex items-center gap-0.5">
-                  {!startAt && (
-                    <CalendarDropdown
-                      open={isCalendarOpen}
-                      onOpenChange={handleChangeCalendar}
-                      selectedDate={startAt ? new Date(startAt) : null}
-                      onSelectDate={handleSelectStartDate}
-                    />
+                <div className="flex items-center gap-1 md:gap-0.5">
+                  {isMobile ? (
+                    <>
+                      {!startAt && (
+                        <Button
+                          type="button"
+                          variant="none"
+                          size="none"
+                          onClick={() => handleChangeCalendar(true)}
+                          className="p-1"
+                        >
+                          <CalendarDays className="size-4 md:size-3" />
+                        </Button>
+                      )}
+                      <Dialog
+                        open={isCalendarOpen}
+                        onOpenChange={handleChangeCalendar}
+                      >
+                        <DialogContent className="w-[80%] bg-sloth-aside-background text-sloth-foreground p-4 gap-4 max-h-[85vh] overflow-y-auto rounded-xl">
+                          <DialogHeader>
+                            <DialogTitle>When?</DialogTitle>
+                          </DialogHeader>
+                          <CalendarDropdownContent
+                            className="w-full"
+                            selectedDate={startAt ? new Date(startAt) : null}
+                            onSelectDate={handleSelectStartDate}
+                            onClose={() => handleChangeCalendar(false)}
+                          />
+                        </DialogContent>
+                      </Dialog>
+                    </>
+                  ) : (
+                    !startAt && (
+                      <CalendarDropdown
+                        open={isCalendarOpen}
+                        onOpenChange={handleChangeCalendar}
+                        selectedDate={startAt ? new Date(startAt) : null}
+                        onSelectDate={handleSelectStartDate}
+                      />
+                    )
                   )}
 
-                  <DropdownMenu
-                    data-ignore-click-outside
-                    open={isTagMenuOpen}
-                    onOpenChange={handleChangeDropdownMenu}
-                  >
-                    <DropdownMenuTrigger asChild>
+                  {isMobile ? (
+                    <>
                       <Button
                         type="button"
                         variant="none"
@@ -723,165 +763,391 @@ export const TodoComponent = React.memo(
                           'group p-1 hover:bg-[#4c4c50] rounded-md [&_svg]:pointer-events-auto outline-none border-0 ring-0',
                           isTagMenuOpen && 'bg-sloth-background-hover-2',
                         )}
-                        // onClick={handleRandomTagColorOnOpenTag}
+                        onClick={() => handleChangeDropdownMenu(true)}
                       >
-                        <Tag size={12} />
+                        <Tag className="size-4 md:size-3" />
                       </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="end"
-                      className="relative w-48 bg-sloth-aside-background border-0 shadow-none rounded-lg text-core-background overflow-visible"
-                    >
-                      <AnimatePresence>
-                        {isColorPanelOpen && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            transition={{ duration: 0.15, ease: 'easeOut' }}
-                            className="absolute right-full top-0 mr-2 w-[120px] bg-sloth-aside-background rounded-lg p-2 pt-0 shadow-lg z-50 origin-top-right"
-                          >
-                            <span className="text-muted-foreground text-xs">
-                              Tag color
-                            </span>
-                            <div className="grid grid-cols-5 gap-2 mt-1">
-                              {TAG_COLORS.map((color) => (
-                                <button
-                                  key={color}
-                                  type="button"
-                                  className={cn(
-                                    'size-4 rounded cursor-pointer transition-transform hover:scale-110 focus:outline-none',
-                                    selectedTagColor === color &&
-                                      'ring-1 ring-sloth-foreground/50 ring-offset-1 ring-offset-sloth-aside-background',
-                                  )}
-                                  style={{ backgroundColor: color }}
-                                  onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    setSelectedTagColor(color)
-                                    setIsColorPanelOpen(false)
-                                  }}
-                                />
-                              ))}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                      <div className="relative flex items-center">
-                        <Button
-                          size="icon-xs"
-                          type="button"
-                          className="z-10 absolute top-0.75 lef-0 bg-sloth-aside-background/0 hover:bg-sloth-aside-background/0"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            setIsColorPanelOpen((prev) => !prev)
-                          }}
+                      <Dialog
+                        open={isTagMenuOpen}
+                        onOpenChange={handleChangeDropdownMenu}
+                      >
+                        <DialogContent
+                          showCloseButton={true}
+                          className="w-[80%] max-w-sm border-0 bg-sloth-aside-background text-sloth-foreground p-4 pb-6 gap-4 max-h-[85vh] overflow-y-auto rounded-xl"
                         >
-                          <span
-                            className="size-4 rounded"
-                            style={{
-                              backgroundColor: selectedTagColor ?? '#000000',
-                            }}
-                          />
-                        </Button>
-
-                        {/* <DropdownMenuSub>
-                          <DropdownMenuSubTrigger className="my-0.5 w-fit h-6 focus:bg-sloth-aside-background-hover data-[state=open]:bg-sloth-aside-background-hover data-[state=open]:text-sloth-foreground">
-                            <span className="size-3 bg-black rounded" />
-                          </DropdownMenuSubTrigger>
-                          <DropdownMenuPortal>
-                            <DropdownMenuSubContent className="mr-2 bg-sloth-aside-background text-sloth-foreground border-0">
-                              {['Calendly', 'Slack', 'Webhook'].map((text) => (
-                                <DropdownMenuItem
-                                  key={text}
-                                  className="my-0.5 h-6 focus:bg-sloth-aside-background-hover focus:text-sloth-foreground"
+                          <DialogHeader>
+                            <DialogTitle>Tags</DialogTitle>
+                          </DialogHeader>
+                          <div className="relative w-full max-w-sm mx-auto flex flex-col gap-2">
+                            <AnimatePresence>
+                              {isColorPanelOpen && (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.95 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  exit={{ opacity: 0, scale: 0.95 }}
+                                  transition={{
+                                    duration: 0.15,
+                                    ease: 'easeOut',
+                                  }}
+                                  className="w-30 bg-sloth-aside-background rounded-lg p-2 pt-0 shadow-lg"
                                 >
-                                  {text}
-                                </DropdownMenuItem>
-                              ))}
-                            </DropdownMenuSubContent>
-                          </DropdownMenuPortal>
-                        </DropdownMenuSub> */}
+                                  <span className="text-muted-foreground text-xs">
+                                    Tag color
+                                  </span>
+                                  <div className="grid grid-cols-5 gap-2 mt-1">
+                                    {TAG_COLORS.map((color) => (
+                                      <button
+                                        key={color}
+                                        type="button"
+                                        className={cn(
+                                          'size-4 rounded cursor-pointer transition-transform hover:scale-110 focus:outline-none',
+                                          selectedTagColor === color &&
+                                            'ring-1 ring-sloth-foreground/50 ring-offset-1 ring-offset-sloth-aside-background',
+                                        )}
+                                        style={{ backgroundColor: color }}
+                                        onClick={(e) => {
+                                          e.preventDefault()
+                                          e.stopPropagation()
+                                          setSelectedTagColor(color)
+                                          setIsColorPanelOpen(false)
+                                        }}
+                                      />
+                                    ))}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
 
-                        <InputWithIcon
-                          data-ignore-click-outside
-                          id="tag-input"
-                          name="new-tag"
-                          type="text"
-                          autoComplete="off"
-                          placeholder="Search or add tag"
-                          // startIcon={Plus}
-                          value={tagSearch}
-                          onChange={(e) => setTagSearch(e.target.value)}
-                          className="my-0.5 pl-7 h-6.5 rounded-md ring-0 focus-visible:ring-0 border-0 focus:bg-sloth-aside-background-hover"
-                          onKeyDown={(e) => {
-                            e.stopPropagation()
-                            if (e.key === 'Enter') {
-                              e.preventDefault()
-                              handleCreateTag()
-                            }
-                          }}
-                        />
-                      </div>
-
-                      {filteredTags.length > 0
-                        ? filteredTags.map((tag) => {
-                            const isTagAdded = todoTags.some(
-                              (todoTag) => todoTag.id === tag.id,
-                            )
-                            return (
-                              <DropdownMenuItem
-                                data-ignore-click-outside
-                                key={tag.id}
-                                className="flex items-center gap-2 cursor-pointer h-fit py-1 rounded-md hover:bg-sloth-aside-background-hover hover:text-core-background focus:bg-transparent focus:text-inherit"
-                                onPointerMove={(e) => e.preventDefault()}
-                                onPointerLeave={(e) => e.preventDefault()}
-                                onSelect={(e) => {
+                            <div className="relative flex items-center">
+                              <Button
+                                size="icon-xs"
+                                type="button"
+                                className="z-10 absolute top-1/2 -translate-y-1/2 left-1.5 bg-sloth-aside-background/0 hover:bg-sloth-aside-background/0"
+                                onClick={(e) => {
                                   e.preventDefault()
-                                  handleToggleTag(tag.id)
+                                  e.stopPropagation()
+                                  setIsColorPanelOpen((prev) => !prev)
                                 }}
                               >
                                 <span
-                                  className="size-2 rounded-full"
+                                  className="size-5 md:size-4 rounded"
                                   style={{
-                                    backgroundColor: tag.color || '#808080',
+                                    backgroundColor:
+                                      selectedTagColor ?? '#000000',
                                   }}
                                 />
-                                <span className="flex-1">{tag.name}</span>
-                                {isTagAdded && (
-                                  <Check className="size-3" strokeWidth={3} />
-                                )}
-                              </DropdownMenuItem>
-                            )
-                          })
-                        : null}
-                      {tagSearch.trim() && !hasExactMatch && (
-                        <DropdownMenuItem
-                          data-ignore-click-outside
-                          className="flex items-center gap-2 cursor-pointer h-fit py-1 rounded-md hover:bg-sloth-aside-background-hover hover:text-core-background focus:bg-transparent focus:text-inherit"
-                          onPointerMove={(e) => e.preventDefault()}
-                          onPointerLeave={(e) => e.preventDefault()}
-                          onSelect={(e) => {
-                            e.preventDefault()
-                            handleCreateTag()
-                          }}
-                        >
-                          <Plus size={12} />
-                          <span>
-                            Create "<strong>{tagSearch.trim()}</strong>"
-                          </span>
-                        </DropdownMenuItem>
-                      )}
-                      {!tagSearch.trim() && tags.length === 0 && (
-                        <DropdownMenuItem disabled>
-                          No tags available
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                              </Button>
+                              <InputWithIcon
+                                data-ignore-click-outside
+                                id="tag-input-mobile"
+                                name="new-tag-mobile"
+                                type="text"
+                                autoComplete="off"
+                                placeholder="Search or add tag"
+                                value={tagSearch}
+                                onChange={(e) => setTagSearch(e.target.value)}
+                                className="w-full md:my-0.5 pl-10 md:pl-7 h-8.5 md:h-6.5 text-base rounded-md ring-0 focus-visible:ring-0 border-0 focus:bg-sloth-aside-background-hover"
+                                onKeyDown={(e) => {
+                                  e.stopPropagation()
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault()
+                                    handleCreateTag()
+                                  }
+                                }}
+                              />
+                            </div>
 
-                  {!dueAt && (
+                            <div className="relative">
+                              <div className="flex flex-col gap-0.5 max-h-50 pb-4 overflow-y-auto">
+                                {filteredTags.length > 0
+                                  ? filteredTags.map((tag) => {
+                                      const isTagAdded = todoTags.some(
+                                        (todoTag) => todoTag.id === tag.id,
+                                      )
+                                      return (
+                                        <button
+                                          key={tag.id}
+                                          type="button"
+                                          className="flex items-center gap-2 cursor-pointer h-fit py-1 px-2 rounded-md hover:bg-sloth-aside-background-hover hover:text-core-background text-left w-full"
+                                          onClick={() => {
+                                            handleToggleTag(tag.id)
+                                            // handleChangeDropdownMenu(false)
+                                          }}
+                                        >
+                                          <span
+                                            className="size-4 md:size-2 rounded-full shrink-0"
+                                            style={{
+                                              backgroundColor:
+                                                tag.color || '#808080',
+                                            }}
+                                          />
+                                          <span className="flex-1">
+                                            {tag.name}
+                                          </span>
+                                          {isTagAdded && (
+                                            <Check
+                                              className="size-3 shrink-0"
+                                              strokeWidth={3}
+                                            />
+                                          )}
+                                        </button>
+                                      )
+                                    })
+                                  : null}
+
+                                {tagSearch.trim() && !hasExactMatch && (
+                                  <button
+                                    type="button"
+                                    className="flex items-center gap-2 cursor-pointer h-fit py-2 px-2 rounded-md hover:bg-sloth-aside-background-hover hover:text-core-background text-left w-full"
+                                    onClick={() => {
+                                      handleCreateTag()
+                                      handleChangeDropdownMenu(false)
+                                    }}
+                                  >
+                                    <Plus size={12} />
+                                    <span>
+                                      Create "
+                                      <strong>{tagSearch.trim()}</strong>"
+                                    </span>
+                                  </button>
+                                )}
+                                {!tagSearch.trim() && tags.length === 0 && (
+                                  <div className="py-2 px-2 text-muted-foreground text-sm">
+                                    No tags available
+                                  </div>
+                                )}
+                              </div>
+                              {/* <div
+                                aria-hidden
+                                className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-linear-to-t from-sloth-aside-background to-transparent"
+                              /> */}
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </>
+                  ) : (
+                    <DropdownMenu
+                      data-ignore-click-outside
+                      open={isTagMenuOpen}
+                      onOpenChange={handleChangeDropdownMenu}
+                    >
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="none"
+                          size="none"
+                          className={cn(
+                            'group p-1 hover:bg-[#4c4c50] rounded-md [&_svg]:pointer-events-auto outline-none border-0 ring-0',
+                            isTagMenuOpen && 'bg-sloth-background-hover-2',
+                          )}
+                        >
+                          <Tag size={12} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        className="relative w-48 bg-sloth-aside-background border-0 shadow-none rounded-lg text-core-background overflow-visible"
+                      >
+                        <AnimatePresence>
+                          {isColorPanelOpen && (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.95 }}
+                              transition={{ duration: 0.15, ease: 'easeOut' }}
+                              className="absolute right-full top-0 mr-2 w-30 bg-sloth-aside-background rounded-lg p-2 pt-0 shadow-lg z-50 origin-top-right"
+                            >
+                              <span className="text-muted-foreground text-xs">
+                                Tag color
+                              </span>
+                              <div className="grid grid-cols-5 gap-2 mt-1">
+                                {TAG_COLORS.map((color) => (
+                                  <button
+                                    key={color}
+                                    type="button"
+                                    className={cn(
+                                      'size-4 rounded cursor-pointer transition-transform hover:scale-110 focus:outline-none',
+                                      selectedTagColor === color &&
+                                        'ring-1 ring-sloth-foreground/50 ring-offset-1 ring-offset-sloth-aside-background',
+                                    )}
+                                    style={{ backgroundColor: color }}
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      e.stopPropagation()
+                                      setSelectedTagColor(color)
+                                      setIsColorPanelOpen(false)
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                        <div className="relative flex items-center">
+                          <Button
+                            size="icon-xs"
+                            type="button"
+                            className="z-10 absolute top-0.75 lef-0 bg-sloth-aside-background/0 hover:bg-sloth-aside-background/0"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              setIsColorPanelOpen((prev) => !prev)
+                            }}
+                          >
+                            <span
+                              className="size-3.5 rounded-xs"
+                              style={{
+                                backgroundColor: selectedTagColor ?? '#000000',
+                              }}
+                            />
+                          </Button>
+                          <InputWithIcon
+                            data-ignore-click-outside
+                            id="tag-input"
+                            name="new-tag"
+                            type="text"
+                            autoComplete="off"
+                            placeholder="Search or add tag"
+                            value={tagSearch}
+                            onChange={(e) => setTagSearch(e.target.value)}
+                            className="my-0.5 pl-7 h-6.5 rounded-md ring-0 focus-visible:ring-0 border-0 focus:bg-sloth-aside-background-hover"
+                            onKeyDown={(e) => {
+                              e.stopPropagation()
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                handleCreateTag()
+                              }
+                            }}
+                          />
+                        </div>
+                        {filteredTags.length > 0
+                          ? filteredTags.map((tag) => {
+                              const isTagAdded = todoTags.some(
+                                (todoTag) => todoTag.id === tag.id,
+                              )
+                              return (
+                                <DropdownMenuItem
+                                  data-ignore-click-outside
+                                  key={tag.id}
+                                  className="flex items-center gap-2 cursor-pointer h-fit py-1 rounded-md hover:bg-sloth-aside-background-hover hover:text-core-background focus:bg-transparent focus:text-inherit"
+                                  onPointerMove={(e) => e.preventDefault()}
+                                  onPointerLeave={(e) => e.preventDefault()}
+                                  onSelect={(e) => {
+                                    e.preventDefault()
+                                    handleToggleTag(tag.id)
+                                  }}
+                                >
+                                  <span
+                                    className="size-2 rounded-full"
+                                    style={{
+                                      backgroundColor: tag.color || '#808080',
+                                    }}
+                                  />
+                                  <span className="flex-1">{tag.name}</span>
+                                  {isTagAdded && (
+                                    <Check className="size-3" strokeWidth={3} />
+                                  )}
+                                </DropdownMenuItem>
+                              )
+                            })
+                          : null}
+                        {tagSearch.trim() && !hasExactMatch && (
+                          <DropdownMenuItem
+                            data-ignore-click-outside
+                            className="flex items-center gap-2 cursor-pointer h-fit py-1 rounded-md hover:bg-sloth-aside-background-hover hover:text-core-background focus:bg-transparent focus:text-inherit"
+                            onPointerMove={(e) => e.preventDefault()}
+                            onPointerLeave={(e) => e.preventDefault()}
+                            onSelect={(e) => {
+                              e.preventDefault()
+                              handleCreateTag()
+                            }}
+                          >
+                            <Plus size={12} />
+                            <span>
+                              Create "<strong>{tagSearch.trim()}</strong>"
+                            </span>
+                          </DropdownMenuItem>
+                        )}
+                        {!tagSearch.trim() && tags.length === 0 && (
+                          <DropdownMenuItem disabled>
+                            No tags available
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+
+                  {/* {!dueAt &&
+                    (isMobile ? (
+                      <>
+                        <Button
+                          type="button"
+                          variant="none"
+                          size="none"
+                          onClick={() => handleChangeDueCalendar(true)}
+                          className="p-1"
+                        >
+                          <Flag className="size-4 md:size-3" />
+                        </Button>
+                        <Dialog
+                          open={isDueCalendarOpen}
+                          onOpenChange={handleChangeDueCalendar}
+                        >
+                          <DialogContent className="w-[80%] bg-sloth-aside-background text-sloth-foreground p-4 gap-4 max-h-[85vh] overflow-y-auto rounded-xl">
+                            <DialogHeader>
+                              <DialogTitle>Due date?</DialogTitle>
+                            </DialogHeader>
+                            <CalendarDropdownContent
+                              className="w-full"
+                              selectedDate={dueAt ? new Date(dueAt) : null}
+                              onSelectDate={handleSelectDueDate}
+                              onClose={() => handleChangeDueCalendar(false)}
+                            />
+                          </DialogContent>
+                        </Dialog>
+                      </>
+                    ) : (
+                      <CalendarDropdown
+                        open={isDueCalendarOpen}
+                        onOpenChange={handleChangeDueCalendar}
+                        selectedDate={dueAt ? new Date(dueAt) : null}
+                        onSelectDate={handleSelectDueDate}
+                        icon={Flag}
+                      />
+                    ))} */}
+
+                  {isMobile ? (
+                    <>
+                      {!dueAt && (
+                        <Button
+                          type="button"
+                          variant="none"
+                          size="none"
+                          onClick={() => handleChangeDueCalendar(true)}
+                          className="p-1"
+                        >
+                          <Flag className="size-4 md:size-3" />
+                        </Button>
+                      )}
+                      <Dialog
+                        open={isDueCalendarOpen}
+                        onOpenChange={handleChangeDueCalendar}
+                      >
+                        <DialogContent className="w-[80%] bg-sloth-aside-background text-sloth-foreground p-4 gap-4 max-h-[85vh] overflow-y-auto rounded-xl">
+                          <DialogHeader>
+                            <DialogTitle>Due date?</DialogTitle>
+                          </DialogHeader>
+                          <CalendarDropdownContent
+                            className="w-full"
+                            selectedDate={dueAt ? new Date(dueAt) : null}
+                            onSelectDate={handleSelectDueDate}
+                            onClose={() => handleChangeDueCalendar(false)}
+                          />
+                        </DialogContent>
+                      </Dialog>
+                    </>
+                  ) : (
                     <CalendarDropdown
                       open={isDueCalendarOpen}
                       onOpenChange={handleChangeDueCalendar}
