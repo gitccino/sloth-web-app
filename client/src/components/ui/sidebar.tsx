@@ -2,9 +2,11 @@
 
 import * as React from 'react'
 import { cva } from 'class-variance-authority'
-import { PanelLeftIcon } from 'lucide-react'
+// import { PanelLeftIcon } from 'lucide-react'
 import { Slot } from 'radix-ui'
-import type { LucideIcon } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { ArrowLeft02Icon, PanelLeftIcon } from '@hugeicons/core-free-icons'
+// import type { LucideIcon } from 'lucide-react'
 import type { VariantProps } from 'class-variance-authority'
 
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -274,11 +276,11 @@ function Sidebar({
 
 function SidebarTrigger({
   className,
-  icon: Icon = PanelLeftIcon,
+  isMobile = false,
   onClick,
   ...props
 }: React.ComponentProps<typeof Button> & {
-  icon?: LucideIcon
+  isMobile?: boolean
 }) {
   const { toggleSidebar } = useSidebar()
 
@@ -295,7 +297,11 @@ function SidebarTrigger({
       }}
       {...props}
     >
-      <Icon />
+      {isMobile ? (
+        <HugeiconsIcon icon={ArrowLeft02Icon} strokeWidth={2.5} />
+      ) : (
+        <HugeiconsIcon icon={PanelLeftIcon} strokeWidth={2.5} />
+      )}
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )

@@ -3,24 +3,25 @@ import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 
 // icons
-import {
-  AlertCircleIcon,
-  CalendarDays,
-  ChevronLeft,
-  Ellipsis,
-  Inbox,
-  Layers,
-  LogOut,
-  Plus,
-  Star,
-  Trash2,
-  X,
-} from 'lucide-react'
+import { AlertCircleIcon, Ellipsis, Plus, X, Check } from 'lucide-react'
 
 // Hono RPC
 import { hc } from 'hono/client'
 import { motion } from 'motion/react'
 import { useHotkey } from '@tanstack/react-hotkeys'
+import { HugeiconsIcon } from '@hugeicons/react'
+import {
+  Asterisk02Icon,
+  Calendar03Icon,
+  CircleArrowDown01Icon,
+  Delete02Icon,
+  FilterVerticalIcon,
+  InboxIcon,
+  Layers01Icon,
+  RightToLeftListBulletIcon,
+  Tag01Icon,
+  UserCircleIcon,
+} from '@hugeicons/core-free-icons'
 import type { AppType } from '../../../server/index.ts'
 
 // shadcn/ui
@@ -361,7 +362,8 @@ function RouteComponent() {
             className="rounded-lg"
             onClick={() => editingTodoId && handleDeleteTodo(editingTodoId)}
           >
-            <Trash2 size={16} />
+            {/* <Trash2 size={16} /> */}
+            <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
           </Button>
           <Button variant="none" className="rounded-lg">
             <Ellipsis size={16} />

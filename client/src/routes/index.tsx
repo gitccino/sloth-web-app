@@ -1,7 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { AiMagicIcon, NoteIcon, StarIcon } from '@hugeicons/core-free-icons'
+import {
+  AiMagicIcon,
+  Asterisk02Icon,
+  NoteIcon,
+} from '@hugeicons/core-free-icons'
 import { Check, Pause, Plus } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useNavStore } from '@/lib/store'
@@ -260,14 +264,21 @@ function App() {
               focused, and stress free. So progress feels good again
             </span>
             <div className="flex gap-2 items-center">
-              <HugeiconsIcon
+              {/* <HugeiconsIcon
                 icon={StarIcon}
                 size={24}
                 color="#E4D7B0"
                 fill="#E4D7B0"
                 strokeWidth={2}
+              /> */}
+              <HugeiconsIcon
+                icon={Asterisk02Icon}
+                size={24}
+                color="#E4D7B0"
+                fill="#E4D7B0"
+                strokeWidth={3}
               />
-              <span className="font-bold pt-1">
+              <span className="font-medium text-sloth-cream">
                 So progress feels good again
               </span>
             </div>

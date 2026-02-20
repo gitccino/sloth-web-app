@@ -1,7 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { CalendarDays, Check, Flag, Plus, Star, Tag, X } from 'lucide-react'
+import { CalendarDays, Check, Flag, Plus, Star, X } from 'lucide-react'
+import {
+  Asterisk02Icon,
+  Calendar03Icon,
+  Flag03Icon,
+  Tag01Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Checkbox } from './ui/checkbox'
+import type { Tag } from 'lucide-react'
 import {
   useAddTagToTodo,
   useCreateTag,
@@ -676,11 +684,27 @@ export const TodoComponent = React.memo(
                                 : () => null
                             }
                           >
-                            <StartIcon
+                            {/* <StartIcon
                               className="size-4 md:size-3"
                               color={color}
                               {...(StartIcon === Star ? { fill: color } : {})}
-                            />
+                            /> */}
+                            {isToday ? (
+                              <HugeiconsIcon
+                                icon={Asterisk02Icon}
+                                color={color}
+                                strokeWidth={2.5}
+                                className="size-4 md:size-3"
+                                fill={color}
+                              />
+                            ) : (
+                              <HugeiconsIcon
+                                icon={Calendar03Icon}
+                                color={color}
+                                strokeWidth={2.2}
+                                className="group-disabled:grayscale"
+                              />
+                            )}
                             <span>{label}</span>
                             <X
                               className="ml-1 size-3 invisible group-hover:visible cursor-pointer"
@@ -715,10 +739,17 @@ export const TodoComponent = React.memo(
                                 : () => null
                             }
                           >
-                            <DueIcon
+                            {/* <DueIcon
                               fill={color}
                               className="size-4 md:size-3"
                               style={{ color }}
+                            /> */}
+                            <HugeiconsIcon
+                              icon={Flag03Icon}
+                              className="mr-0.5 size-4 md:size-3"
+                              strokeWidth={2}
+                              style={{ color }}
+                              fill={color}
                             />
                             <span>Deadline: {label}</span>
                             <span
@@ -753,7 +784,12 @@ export const TodoComponent = React.memo(
                             onClick={() => handleChangeCalendar(true)}
                             className="p-1"
                           >
-                            <CalendarDays className="size-4 md:size-3" />
+                            {/* <CalendarDays className="size-4 md:size-3" /> */}
+                            <HugeiconsIcon
+                              icon={Calendar03Icon}
+                              className="size-5 md:size-3"
+                              strokeWidth={2}
+                            />
                           </Button>
                         )}
                         <Dialog
@@ -973,7 +1009,12 @@ export const TodoComponent = React.memo(
                               isTagMenuOpen && 'bg-sloth-background-hover-2',
                             )}
                           >
-                            <Tag size={12} />
+                            {/* <Tag size={12} /> */}
+                            <HugeiconsIcon
+                              icon={Tag01Icon}
+                              className="size-3.5 -rotate-90"
+                              strokeWidth={2.2}
+                            />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
@@ -1162,7 +1203,12 @@ export const TodoComponent = React.memo(
                             onClick={() => handleChangeDueCalendar(true)}
                             className="p-1"
                           >
-                            <Flag className="size-4 md:size-3" />
+                            {/* <Flag className="size-4 md:size-3" /> */}
+                            <HugeiconsIcon
+                              icon={Flag03Icon}
+                              className="size-5"
+                              strokeWidth={2}
+                            />
                           </Button>
                         )}
                         <Dialog
@@ -1188,7 +1234,7 @@ export const TodoComponent = React.memo(
                         onOpenChange={handleChangeDueCalendar}
                         selectedDate={dueAt ? new Date(dueAt) : null}
                         onSelectDate={handleSelectDueDate}
-                        icon={Flag}
+                        calendarType="due"
                       />
                     )}
                   </div>
