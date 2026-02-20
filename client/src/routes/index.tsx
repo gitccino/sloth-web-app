@@ -248,8 +248,11 @@ function App() {
         <div className="flex flex-col items-center gap-6 sm:gap-10">
           <img src={SlothLogo} className="w-20 sm:w-24 md:w-30 rounded-2xl" />
           <div className="flex flex-col items-center gap-3 sm:gap-4">
-            <h1 className="text-[1.7rem] md:text-4xl font-recoleta font-bold leading-tight">
-              Meet <span className="px-2 text-sloth-cream">/Sloth</span>{' '}
+            <h1 className="text-[1.5rem] md:text-4xl font-oktah-round font-bold leading-tight">
+              Meet{' '}
+              <span className="px-1 font-recoleta text-sloth-cream font-black">
+                Sloth
+              </span>
               <br className="md:hidden" /> Productive without pressure
             </h1>
             <span className="w-full max-w-[18rem] sm:max-w-[24rem] sm:w-120 text-muted-foreground text-sm sm:text-base">
@@ -286,7 +289,7 @@ function App() {
           <div className="w-full md:w-[40%] flex flex-col items-start md:text-left">
             <div className="flex items-center gap-1">
               <HugeiconsIcon icon={NoteIcon} strokeWidth={2.5} />
-              <h2 className="w-full max-w-[20rem] md:w-80 md:max-w-none text-3xl font-bold">
+              <h2 className="text-3xl font-semibold whitespace-nowrap">
                 Capture tasks at speed
               </h2>
             </div>
@@ -304,7 +307,7 @@ function App() {
           <div className="w-full md:w-[40%] flex flex-col items-start md:text-left order-2 md:order-1">
             <div className="flex items-center gap-1">
               <HugeiconsIcon icon={AiMagicIcon} strokeWidth={2.5} />
-              <h2 className="w-full max-w-[20rem] md:w-80 md:max-w-none text-3xl font-bold">
+              <h2 className="text-3xl font-semibold whitespace-nowrap">
                 Your thinking partner
               </h2>
             </div>

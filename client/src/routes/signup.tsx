@@ -246,7 +246,7 @@ function RouteComponent() {
         </Button>
         <Card className="w-full h-fit shadow-none bg-sloth-background text-sloth-foreground">
           <CardHeader className="w-full flex flex-col items-start gap-1 px-8">
-            <CardTitle className="font-recoleta font-bold text-2xl md:text-3xl">
+            <CardTitle className="font-oktah-round font-semibold text-2xl md:text-3xl">
               Create an account
             </CardTitle>
             <CardDescription className="pl-0.5 font-normal">
@@ -345,7 +345,7 @@ function RouteComponent() {
                 variant="defaultCore"
                 disabled={!isFormValid || loading}
                 hidden={!isFormValid}
-                className={`h-12 w-full font-bold text-white rounded-xl cursor-pointer`}
+                className={`h-12 w-full font-medium rounded-xl cursor-pointer`}
               >
                 {loading ? (
                   <Loading>Creating account...</Loading>

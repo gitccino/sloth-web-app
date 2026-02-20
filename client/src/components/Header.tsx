@@ -57,10 +57,13 @@ export default function Header() {
       }}
     >
       <header className="z-50 relative px-6 py-2 h-20 flex justify-between items-center bg-sloth-background text-sloth-foreground">
-        <div className="flex justify-start items-center gap-2 font-recoleta font-black">
+        <div className="flex justify-start items-center gap-2 font-oktah-round font-bold">
           <Link to="/" className="flex items-center gap-3">
-            <img src={SlothLogo} className="size-8 rounded-md" />
-            <h1 className="text-2xl">Sloth</h1>
+            <img
+              src={SlothLogo}
+              className="hidden md:block size-8 rounded-md"
+            />
+            <h1 className="text-2xl pb-1 hidden md:block">Sloth</h1>
           </Link>
         </div>
 
@@ -75,7 +78,7 @@ export default function Header() {
                   className="size-3 opacity-50 group-data-[status=active]:opacity-100"
                   strokeWidth={2.5}
                 />
-                <span className="font-bold">Todos</span>
+                <span className="font-medium">Todos</span>
               </Link>
             </Button>
           )}
@@ -91,7 +94,7 @@ export default function Header() {
                     className="size-3 opacity-50 group-data-[status=active]:opacity-100"
                     strokeWidth={2.5}
                   />
-                  <span className="font-bold">Sign in</span>
+                  <span className="font-medium">Sign in</span>
                 </Link>
               </Button>
             </>
@@ -105,7 +108,7 @@ export default function Header() {
               onClick={handleSignout}
             >
               <LogOut className="size-3 opacity-100" strokeWidth={2.5} />
-              <span className="font-bold">Logout</span>
+              <span className="font-medium">Logout</span>
             </Button>
           )}
         </nav>
