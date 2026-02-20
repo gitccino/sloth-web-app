@@ -178,7 +178,7 @@ function RouteComponent() {
                     disabled={loading}
                     required
                     endIcon={Mail}
-                    className={`rounded-xl h-12 shadow-none`}
+                    className={`rounded-xl h-12 shadow-none text-sm`}
                   />
                   <WarningMessage
                     name="username"
@@ -199,7 +199,7 @@ function RouteComponent() {
                     disabled={loading}
                     required
                     endIcon={KeyRound}
-                    className={`rounded-xl h-12 shadow-none`}
+                    className={`rounded-xl h-12 shadow-none text-sm`}
                   />
                   <WarningMessage
                     name="password"
@@ -230,7 +230,7 @@ function RouteComponent() {
 
             <div className="w-full py-3 flex justify-center items-center gap-2 text-sm text-muted-foreground">
               <span>Don't have an account?</span>
-              <Link to="/signup" className="text-sloth-foreground">
+              <Link to="/signup" className="text-sloth-foreground pb-0.5">
                 Create an account
               </Link>
             </div>
