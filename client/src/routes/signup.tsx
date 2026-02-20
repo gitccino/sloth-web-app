@@ -246,7 +246,7 @@ function RouteComponent() {
         </Button>
         <Card className="w-full h-fit shadow-none bg-sloth-background text-sloth-foreground">
           <CardHeader className="w-full flex flex-col items-start gap-1 px-8">
-            <CardTitle className="font-recoleta font-bold text-2xl md:text-3xl">
+            <CardTitle className="font-oktah-round font-semibold text-2xl md:text-3xl">
               Create an account
             </CardTitle>
             <CardDescription className="pl-0.5 font-normal">
@@ -268,7 +268,7 @@ function RouteComponent() {
                     required
                     disabled={loading}
                     endIcon={User}
-                    className={`rounded-xl shadow-none h-12 ${signupData.username && !errors.username ? '' : signupData.username ? 'border-destructive focus-visible:border-destructive' : ''}`}
+                    className={`rounded-xl shadow-none h-12 text-sm ${signupData.username && !errors.username ? '' : signupData.username ? 'border-destructive focus-visible:border-destructive' : ''}`}
                   />
                   <WarningMessage
                     name="username"
@@ -287,7 +287,7 @@ function RouteComponent() {
                     disabled={loading}
                     required
                     endIcon={Mail}
-                    className={`rounded-xl shadow-none h-12 ${signupData.email && !errors.email ? '' : signupData.email ? 'border-destructive focus-visible:border-destructive' : ''}`}
+                    className={`rounded-xl shadow-none h-12 text-sm ${signupData.email && !errors.email ? '' : signupData.email ? 'border-destructive focus-visible:border-destructive' : ''}`}
                   />
                   <WarningMessage
                     name="email"
@@ -308,7 +308,7 @@ function RouteComponent() {
                     disabled={loading}
                     required
                     endIcon={KeyRound}
-                    className={`rounded-xl shadow-none h-12 ${signupData.password && !errors.password ? '' : signupData.password ? 'border-destructive focus-visible:border-destructive' : ''}`}
+                    className={`rounded-xl shadow-none h-12 text-sm ${signupData.password && !errors.password ? '' : signupData.password ? 'border-destructive focus-visible:border-destructive' : ''}`}
                   />
                   <WarningMessage
                     name="password"
@@ -330,7 +330,7 @@ function RouteComponent() {
                     disabled={loading}
                     required
                     endIcon={KeyRound}
-                    className={`rounded-xl shadow-none h-12 ${signupData.confirmPassword && !errors.confirmPassword ? '' : signupData.confirmPassword ? 'border-destructive focus-visible:border-destructive' : ''}`}
+                    className={`rounded-xl shadow-none h-12 text-sm ${signupData.confirmPassword && !errors.confirmPassword ? '' : signupData.confirmPassword ? 'border-destructive focus-visible:border-destructive' : ''}`}
                   />
                   <WarningMessage
                     name="confirmPassword"
@@ -345,7 +345,7 @@ function RouteComponent() {
                 variant="defaultCore"
                 disabled={!isFormValid || loading}
                 hidden={!isFormValid}
-                className={`h-12 w-full font-bold text-white rounded-xl cursor-pointer`}
+                className={`h-12 w-full font-medium rounded-xl cursor-pointer`}
               >
                 {loading ? (
                   <Loading>Creating account...</Loading>
@@ -365,7 +365,7 @@ function RouteComponent() {
             </form>
             <div className="w-full py-3 flex justify-center items-center gap-2 text-sm text-muted-foreground">
               <span>Already have an account?</span>
-              <Link to="/signin" className="text-sloth-foreground">
+              <Link to="/signin" className="text-sloth-foreground pb-0.5">
                 Sign in
               </Link>
             </div>

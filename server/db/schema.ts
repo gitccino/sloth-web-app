@@ -45,7 +45,7 @@ export const tags = pgTable(
     uniqueIndex("tags_userId_name_idx").on(table.userId, table.name),
     // Index for querying all tags by user
     index("tags_userId_idx").on(table.userId),
-  ]
+  ],
 );
 
 export const todoTags = pgTable(
@@ -64,7 +64,7 @@ export const todoTags = pgTable(
     primaryKey({ columns: [table.todoId, table.tagId] }),
     // Index for reverse lookups (get all todos with a tag)
     index("todoTags_tagId_idx").on(table.tagId),
-  ]
+  ],
 );
 
 // better-auth schema
@@ -161,13 +161,6 @@ export const accountRelations = relations(account, ({ one }) => ({
     references: [user.id],
   }),
 }));
-
-// Todo and Tag relations
-/*
-  Define how todos table is related to other table in databse
-  - A Todo belongs to one User
-  - A Todo has many TodoTags
-*/
 
 export const todosRelations = relations(todos, ({ one, many }) => ({
   user: one(user, {

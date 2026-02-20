@@ -1,5 +1,5 @@
 {
-  "name": "hono-react-better-auth",
+  "name": "sloth-web-app",
   "scripts": {
     "server": "bun run --hot server/index.ts",
     "client": "cd client && bun run dev",

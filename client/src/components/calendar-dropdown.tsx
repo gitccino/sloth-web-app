@@ -1,8 +1,12 @@
 import { useState } from 'react'
-import { CalendarDays, ChevronLeft, ChevronRight, Star } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Star } from 'lucide-react'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Delete02Icon } from '@hugeicons/core-free-icons'
-import type { LucideIcon } from 'lucide-react'
+import {
+  Calendar03Icon,
+  Delete02Icon,
+  Flag03Icon,
+} from '@hugeicons/core-free-icons'
+// import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -26,7 +30,8 @@ interface CalendarDropdownProps {
   onSelectDate?: (date: Date | null) => void
   open?: boolean
   onOpenChange?: (open: boolean) => void
-  icon?: LucideIcon
+  // icon?: LucideIcon
+  calendarType?: 'start' | 'due'
 }
 
 interface CalendarDropdownContentProps {
@@ -305,7 +310,8 @@ export function CalendarDropdown({
   onSelectDate,
   open,
   onOpenChange,
-  icon: Icon = CalendarDays,
+  // icon: Icon = CalendarDays,
+  calendarType = 'start',
 }: CalendarDropdownProps) {
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
@@ -319,7 +325,20 @@ export function CalendarDropdown({
             open && 'bg-sloth-background-hover-2',
           )}
         >
-          <Icon size={12} />
+          {/* <Icon size={12} /> */}
+          {calendarType === 'start' ? (
+            <HugeiconsIcon
+              icon={Calendar03Icon}
+              className="size-4"
+              strokeWidth={2}
+            />
+          ) : (
+            <HugeiconsIcon
+              icon={Flag03Icon}
+              className="size-4"
+              strokeWidth={2}
+            />
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent
