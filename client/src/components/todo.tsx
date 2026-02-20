@@ -77,12 +77,17 @@ function formatStartAt(dateStr: string) {
 
   // Today
   if (diffDays === 0) {
-    return { icon: Star, label: 'Today', color: '#FFD400' }
+    return { icon: Star, label: 'Today', color: '#FFD400', isToday: true }
   }
 
   // Tomorrow
   if (diffDays === 1) {
-    return { icon: CalendarDays, label: 'Tomorrow', color: '#FA1855' }
+    return {
+      icon: CalendarDays,
+      label: 'Tomorrow',
+      color: '#FA1855',
+      isToday: false,
+    }
   }
 
   // Rest of this week (2–6 days ahead, same week)
@@ -99,7 +104,7 @@ function formatStartAt(dateStr: string) {
     day: 'numeric',
     month: 'short',
   })
-  return { icon: CalendarDays, label, color: '#FA1855' }
+  return { icon: CalendarDays, label, color: '#FA1855', isToday: false }
 }
 
 function formatDueAt(dateStr: string) {
@@ -181,6 +186,12 @@ const TAG_COLORS = [
   '#FA1855',
   '#39A99D',
   '#A491D3',
+  '#010101',
+  '#347d39',
+  '#6e747c',
+  '#402b56',
+  '#7b5c42',
+  '#e84b58',
 ]
 
 const randomTagColor = () => {
@@ -471,24 +482,24 @@ export const TodoComponent = React.memo(
           handleSaveEditing()
 
           // Prevent the same pointer's click from opening another todo
-          const blockClick = (e: MouseEvent) => {
-            document.removeEventListener('click', blockClick, true)
-            const clickTarget = e.target as Node | null
-            const el =
-              clickTarget instanceof Element
-                ? clickTarget
-                : clickTarget?.parentElement
-            if (!el) return
-            const clickedTodo = el.closest('[data-todo-id]')
-            if (
-              clickedTodo &&
-              clickedTodo.getAttribute('data-todo-id') !== id
-            ) {
-              e.preventDefault()
-              e.stopPropagation()
-            }
-          }
-          document.addEventListener('click', blockClick, true)
+          // const blockClick = (e: MouseEvent) => {
+          //   document.removeEventListener('click', blockClick, true)
+          //   const clickTarget = e.target as Node | null
+          //   const el =
+          //     clickTarget instanceof Element
+          //       ? clickTarget
+          //       : clickTarget?.parentElement
+          //   if (!el) return
+          //   const clickedTodo = el.closest('[data-todo-id]')
+          //   if (
+          //     clickedTodo &&
+          //     clickedTodo.getAttribute('data-todo-id') !== id
+          //   ) {
+          //     e.preventDefault()
+          //     e.stopPropagation()
+          //   }
+          // }
+          // document.addEventListener('click', blockClick, true)
         }
 
         document.addEventListener('mousedown', handleClickOutside)
@@ -518,7 +529,7 @@ export const TodoComponent = React.memo(
               //   : '0px 0px',
             }}
             transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-            className="h-fit w-full min-w-0 flex flex-col items-start rounded-lg"
+            className="h-fit w-full min-w-0 flex flex-col items-start rounded-2xl md:rounded-xl"
             onChange={handleFormEditing}
             onKeyDown={handleKeyDown}
           >
@@ -528,7 +539,7 @@ export const TodoComponent = React.memo(
                 data-checkbox
                 checked={completed}
                 onCheckedChange={handleToggleComplete}
-                className="size-4 md:size-3.5 mt-1.5 md:mt-[0.3rem] shrink-0 rounded-[3px] border-core-background/30 data-[state=checked]:border-0 data-[state=checked]:bg-[#18AEF8] data-[state=checked]:text-core-foreground"
+                className="size-4 md:size-3.5 mt-2 md:mt-[0.4rem] shrink-0 rounded-[3px] border-core-background/30 data-[state=checked]:border-0 data-[state=checked]:bg-[#18AEF8] data-[state=checked]:text-core-foreground"
               />
               <div className="min-w-0 flex-1 flex flex-col justify-start items-start overflow-hidden">
                 <div
@@ -536,18 +547,6 @@ export const TodoComponent = React.memo(
                   className="relative w-full min-w-0 overflow-hidden"
                 >
                   {isEditing ? (
-                    // <input
-                    //   ref={inputRef}
-                    //   id={`title-${id}`}
-                    //   name="title"
-                    //   type="text"
-                    //   defaultValue={editedTitle}
-                    //   // onChange={handleEditing}
-                    //   // onKeyDown={handleKeyDown}
-                    //   disabled={updateTodoMutation.isPending}
-                    //   className="w-[95%] md:w-[80%] border-0 bt ring-0! outline-none! shadow-none focus-visible:border-0! focus-visible:ring-0 focus-visible:outline-none flex-wrap"
-                    // />
-
                     <textarea
                       ref={inputRef}
                       id={`title-${id}`}
@@ -555,9 +554,6 @@ export const TodoComponent = React.memo(
                       defaultValue={editedTitle}
                       disabled={updateTodoMutation.isPending}
                       onInput={autoResizeTextarea}
-                      // onKeyDown={(e) => {
-                      //   if (e.key === 'Enter') e.preventDefault()
-                      // }}
                       className="w-[95%] md:w-[80%] text-lg md:text-base focus-visible:border-0 focus-visible:ring-0 focus-visible:outline-none resize-none overflow-hidden"
                       rows={1}
                     />
@@ -568,12 +564,16 @@ export const TodoComponent = React.memo(
                       </span>
                       {todoTags.length > 0 && (
                         <>
-                          <Tag className="md:hidden size-3 shrink-0 text-sloth-foreground/70" />
+                          <HugeiconsIcon
+                            icon={Tag01Icon}
+                            className="md:hidden size-3 shrink-0 -rotate-90 text-sloth-foreground/40"
+                            strokeWidth={2}
+                          />
                           <div className="hidden md:flex justify-start items-center text-sloth-foreground/70 text-[0.75rem] gap-1">
                             {todoTags.map((tag) => (
                               <span
                                 key={tag.id}
-                                className="border px-2 rounded-full lowercase"
+                                className="border px-2 rounded-full"
                                 style={{
                                   borderColor: tag.color
                                     ? `${tag.color}50`
@@ -589,6 +589,7 @@ export const TodoComponent = React.memo(
                     </div>
                   )}
                 </div>
+
                 <AnimatePresence initial={false}>
                   {isEditing && (
                     <motion.div
@@ -633,16 +634,16 @@ export const TodoComponent = React.memo(
                 {todoTags.length > 0 && (
                   <div className="px-2 flex gap-2 text-[0.75rem] flex-wrap">
                     {todoTags.map((tag) => (
-                      <span
+                      <div
                         key={tag.id}
-                        className="group/tag inline-flex items-center gap-0.5 px-2 py-0.5 rounded-sm font-bold md:font-semibold cursor-default"
+                        className="group/tag inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full font-medium md:font-semibold cursor-default"
                         style={{
                           backgroundColor: tag.color
                             ? `${tag.color}90`
                             : '#80808090',
                         }}
                       >
-                        {tag.name}
+                        <span>{tag.name}</span>
                         <button
                           type="button"
                           className="hidden group-hover/tag:inline-flex items-center justify-center size-3 rounded-full"
@@ -655,7 +656,7 @@ export const TodoComponent = React.memo(
                         >
                           <X size={10} strokeWidth={3} />
                         </button>
-                      </span>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -666,16 +667,17 @@ export const TodoComponent = React.memo(
                     {startAt &&
                       (() => {
                         const {
-                          icon: StartIcon,
+                          // icon: StartIcon,
                           label,
                           color,
+                          isToday,
                         } = formatStartAt(startAt)
                         return (
                           <Button
                             type="button"
                             variant="none"
                             size="sm"
-                            className="group h-6 hover:bg-[#4c4c50] rounded-md [&_svg]:pointer-events-auto text-sm md:text-xs gap-0.75 font-semibold"
+                            className="group h-6 hover:bg-[#4c4c50] rounded-md [&_svg]:pointer-events-auto text-sm md:text-xs gap-0.75 font-medium"
                             onClick={
                               isMobile
                                 ? () => {
@@ -719,7 +721,7 @@ export const TodoComponent = React.memo(
                     {dueAt &&
                       (() => {
                         const {
-                          icon: DueIcon,
+                          // icon: DueIcon,
                           label,
                           remaining,
                           color,
@@ -730,7 +732,7 @@ export const TodoComponent = React.memo(
                             type="button"
                             variant="none"
                             size="sm"
-                            className="group h-6 hover:bg-[#4c4c50] rounded-md [&_svg]:pointer-events-auto text-sm md:text-xs gap-0.75 font-semibold"
+                            className="group h-6 hover:bg-[#4c4c50] rounded-md [&_svg]:pointer-events-auto text-sm md:text-xs gap-0.75 font-medium"
                             onClick={
                               isMobile
                                 ? () => {
@@ -832,59 +834,26 @@ export const TodoComponent = React.memo(
                           )}
                           onClick={() => handleChangeDropdownMenu(true)}
                         >
-                          <Tag className="size-4 md:size-3" />
+                          {/* <Tag className="size-4 md:size-3" /> */}
+                          <HugeiconsIcon
+                            icon={Tag01Icon}
+                            className="size-4.5 -rotate-90"
+                            strokeWidth={2}
+                          />
                         </Button>
                         <Dialog
                           open={isTagMenuOpen}
                           onOpenChange={handleChangeDropdownMenu}
                         >
                           <DialogContent
+                            onOpenAutoFocus={(e) => e.preventDefault()}
                             showCloseButton={true}
-                            className="w-[80%] max-w-sm border-0 bg-sloth-aside-background text-sloth-foreground p-4 pb-6 gap-4 max-h-[85vh] overflow-y-auto rounded-xl"
+                            className="w-[80%] max-w-sm border-0 bg-sloth-aside-background text-sloth-foreground p-4 pb-6 gap-4 max-h-[85vh] overflow-y-auto rounded-2xl"
                           >
                             <DialogHeader>
                               <DialogTitle>Tags</DialogTitle>
                             </DialogHeader>
                             <div className="relative w-full max-w-sm mx-auto flex flex-col gap-2">
-                              <AnimatePresence>
-                                {isColorPanelOpen && (
-                                  <motion.div
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.95 }}
-                                    transition={{
-                                      duration: 0.15,
-                                      ease: 'easeOut',
-                                    }}
-                                    className="w-30 bg-sloth-aside-background rounded-lg p-2 pt-0 shadow-lg"
-                                  >
-                                    <span className="text-muted-foreground text-xs">
-                                      Tag color
-                                    </span>
-                                    <div className="grid grid-cols-5 gap-2 mt-1">
-                                      {TAG_COLORS.map((color) => (
-                                        <button
-                                          key={color}
-                                          type="button"
-                                          className={cn(
-                                            'size-4 rounded cursor-pointer transition-transform hover:scale-110 focus:outline-none',
-                                            selectedTagColor === color &&
-                                              'ring-1 ring-sloth-foreground/50 ring-offset-1 ring-offset-sloth-aside-background',
-                                          )}
-                                          style={{ backgroundColor: color }}
-                                          onClick={(e) => {
-                                            e.preventDefault()
-                                            e.stopPropagation()
-                                            setSelectedTagColor(color)
-                                            setIsColorPanelOpen(false)
-                                          }}
-                                        />
-                                      ))}
-                                    </div>
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
-
                               <div className="relative flex items-center">
                                 <Button
                                   size="icon-xs"
@@ -897,7 +866,7 @@ export const TodoComponent = React.memo(
                                   }}
                                 >
                                   <span
-                                    className="size-5 md:size-4 rounded"
+                                    className="size-6 md:size-4 rounded-sm"
                                     style={{
                                       backgroundColor:
                                         selectedTagColor ?? '#000000',
@@ -924,70 +893,89 @@ export const TodoComponent = React.memo(
                                 />
                               </div>
 
-                              <div className="relative">
-                                <div className="flex flex-col gap-0.5 max-h-50 pb-4 overflow-y-auto">
-                                  {filteredTags.length > 0
-                                    ? filteredTags.map((tag) => {
-                                        const isTagAdded = todoTags.some(
-                                          (todoTag) => todoTag.id === tag.id,
-                                        )
-                                        return (
-                                          <button
-                                            key={tag.id}
-                                            type="button"
-                                            className="flex items-center gap-2 cursor-pointer h-fit py-1 px-2 rounded-md hover:bg-sloth-aside-background-hover hover:text-core-background text-left w-full"
-                                            onClick={() => {
-                                              handleToggleTag(tag.id)
-                                              // handleChangeDropdownMenu(false)
-                                            }}
-                                          >
-                                            <span
-                                              className="size-4 md:size-2 rounded-full shrink-0"
-                                              style={{
-                                                backgroundColor:
-                                                  tag.color || '#808080',
+                              <div className="relative flex flex-col justify-center items-center">
+                                {isColorPanelOpen ? (
+                                  <div className="w-fit pt-2 grid grid-cols-7 gap-2">
+                                    {TAG_COLORS.map((color) => (
+                                      <button
+                                        key={color}
+                                        type="button"
+                                        className={cn(
+                                          'size-8 rounded-sm cursor-pointer transition-transform hover:scale-110 focus:outline-none',
+                                          selectedTagColor === color &&
+                                            'ring-1 ring-sloth-foreground/50 ring-offset-1 ring-offset-sloth-aside-background',
+                                        )}
+                                        style={{ backgroundColor: color }}
+                                        onClick={(e) => {
+                                          e.preventDefault()
+                                          e.stopPropagation()
+                                          setSelectedTagColor(color)
+                                          setIsColorPanelOpen(false)
+                                        }}
+                                      />
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="w-full flex flex-col gap-0.5 max-h-52 pb-4 overflow-y-auto">
+                                    {filteredTags.length > 0
+                                      ? filteredTags.map((tag) => {
+                                          const isTagAdded = todoTags.some(
+                                            (todoTag) => todoTag.id === tag.id,
+                                          )
+                                          return (
+                                            <button
+                                              key={tag.id}
+                                              type="button"
+                                              className="flex items-center gap-2 cursor-pointer h-fit py-1 px-2 rounded-md hover:bg-sloth-aside-background-hover hover:text-core-background text-left w-full"
+                                              onClick={() => {
+                                                handleToggleTag(tag.id)
+                                                // handleChangeDropdownMenu(false)
                                               }}
-                                            />
-                                            <span className="flex-1">
-                                              {tag.name}
-                                            </span>
-                                            {isTagAdded && (
-                                              <Check
-                                                className="size-3 shrink-0"
-                                                strokeWidth={3}
+                                            >
+                                              <span
+                                                className="size-4 md:size-2 rounded-full shrink-0"
+                                                style={{
+                                                  backgroundColor:
+                                                    tag.color || '#808080',
+                                                }}
                                               />
-                                            )}
-                                          </button>
-                                        )
-                                      })
-                                    : null}
+                                              <span className="flex-1">
+                                                {tag.name}
+                                              </span>
+                                              {isTagAdded && (
+                                                <Check
+                                                  className="size-3 shrink-0"
+                                                  strokeWidth={3}
+                                                />
+                                              )}
+                                            </button>
+                                          )
+                                        })
+                                      : null}
 
-                                  {tagSearch.trim() && !hasExactMatch && (
-                                    <button
-                                      type="button"
-                                      className="flex items-center gap-2 cursor-pointer h-fit py-2 px-2 rounded-md hover:bg-sloth-aside-background-hover hover:text-core-background text-left w-full"
-                                      onClick={() => {
-                                        handleCreateTag()
-                                        handleChangeDropdownMenu(false)
-                                      }}
-                                    >
-                                      <Plus size={12} />
-                                      <span>
-                                        Create "
-                                        <strong>{tagSearch.trim()}</strong>"
-                                      </span>
-                                    </button>
-                                  )}
-                                  {!tagSearch.trim() && tags.length === 0 && (
-                                    <div className="py-2 px-2 text-muted-foreground text-sm">
-                                      No tags available
-                                    </div>
-                                  )}
-                                </div>
-                                {/* <div
-                                aria-hidden
-                                className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-linear-to-t from-sloth-aside-background to-transparent"
-                              /> */}
+                                    {tagSearch.trim() && !hasExactMatch && (
+                                      <button
+                                        type="button"
+                                        className="flex items-center gap-2 cursor-pointer h-fit py-2 px-2 rounded-md hover:bg-sloth-aside-background-hover hover:text-core-background text-left w-full"
+                                        onClick={() => {
+                                          handleCreateTag()
+                                          handleChangeDropdownMenu(false)
+                                        }}
+                                      >
+                                        <Plus size={12} />
+                                        <span>
+                                          Create "
+                                          <strong>{tagSearch.trim()}</strong>"
+                                        </span>
+                                      </button>
+                                    )}
+                                    {!tagSearch.trim() && tags.length === 0 && (
+                                      <div className="py-2 px-2 text-muted-foreground text-sm">
+                                        No tags available
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </DialogContent>
@@ -1060,7 +1048,7 @@ export const TodoComponent = React.memo(
                             <Button
                               size="icon-xs"
                               type="button"
-                              className="z-10 absolute top-0.75 lef-0 bg-sloth-aside-background/0 hover:bg-sloth-aside-background/0"
+                              className="z-10 absolute top-0.75 left-0.5 bg-sloth-aside-background/0 hover:bg-sloth-aside-background/0"
                               onClick={(e) => {
                                 e.preventDefault()
                                 e.stopPropagation()
@@ -1068,7 +1056,7 @@ export const TodoComponent = React.memo(
                               }}
                             >
                               <span
-                                className="size-3.5 rounded-xs"
+                                className="size-4 rounded"
                                 style={{
                                   backgroundColor:
                                     selectedTagColor ?? '#000000',
@@ -1112,7 +1100,7 @@ export const TodoComponent = React.memo(
                                     }}
                                   >
                                     <span
-                                      className="size-2 rounded-full"
+                                      className="size-3 rounded-full"
                                       style={{
                                         backgroundColor: tag.color || '#808080',
                                       }}
@@ -1153,45 +1141,6 @@ export const TodoComponent = React.memo(
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )}
-
-                    {/* {!dueAt &&
-                    (isMobile ? (
-                      <>
-                        <Button
-                          type="button"
-                          variant="none"
-                          size="none"
-                          onClick={() => handleChangeDueCalendar(true)}
-                          className="p-1"
-                        >
-                          <Flag className="size-4 md:size-3" />
-                        </Button>
-                        <Dialog
-                          open={isDueCalendarOpen}
-                          onOpenChange={handleChangeDueCalendar}
-                        >
-                          <DialogContent className="w-[80%] bg-sloth-aside-background text-sloth-foreground p-4 gap-4 max-h-[85vh] overflow-y-auto rounded-xl">
-                            <DialogHeader>
-                              <DialogTitle>Due date?</DialogTitle>
-                            </DialogHeader>
-                            <CalendarDropdownContent
-                              className="w-full"
-                              selectedDate={dueAt ? new Date(dueAt) : null}
-                              onSelectDate={handleSelectDueDate}
-                              onClose={() => handleChangeDueCalendar(false)}
-                            />
-                          </DialogContent>
-                        </Dialog>
-                      </>
-                    ) : (
-                      <CalendarDropdown
-                        open={isDueCalendarOpen}
-                        onOpenChange={handleChangeDueCalendar}
-                        selectedDate={dueAt ? new Date(dueAt) : null}
-                        onSelectDate={handleSelectDueDate}
-                        icon={Flag}
-                      />
-                    ))} */}
 
                     {isMobile ? (
                       <>
